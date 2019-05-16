@@ -68,13 +68,17 @@ class BatchDialog(QDialog):
     def batch_process(self):
         """Starts batch processing."""
         if len(self.fnames) > 0:
-            self.ui.progress.setMaximum(len(self.fnames))
-            self.ui.progress.setValue(0)
+            progress = QProgressDialog("Running Batch Processing...",
+                                       "Abort", 0, len(self.fnames),
+                                       parent=self)
+            progress.setWindowModality(Qt.WindowModal)
 
         for index, fname in enumerate(self.fnames):
-            self.ui.progress.setValue(index)
+            progress.setValue(index)
             data, type = _read(fname)
             ending = ''
+            if progress.wasCanceled():
+                break
 
             # Filtering
             if self.ui.filterBox.isChecked():
@@ -126,7 +130,4 @@ class BatchDialog(QDialog):
                                  + "encountered a problem..."))
                     print(e)
 
-        if len(self.fnames) > 0:
-            self.ui.progress.setValue(len(self.fnames))
-            time.sleep(2)
-            self.ui.progress.setValue(0)
+        progress.setValue(len(self.fnames))

@@ -109,10 +109,6 @@ class Ui_BatchDialog(object):
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 2)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
-        self.progress = QtWidgets.QProgressBar(Dialog)
-        self.progress.setProperty("value", 0)
-        self.progress.setObjectName("progress")
-        self.verticalLayout_2.addWidget(self.progress)
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
