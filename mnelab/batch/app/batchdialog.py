@@ -67,8 +67,9 @@ class BatchDialog(QDialog):
 
     def batch_process(self):
         """Starts batch processing."""
-        self.ui.progress.setMaximum(len(self.fnames))
-        self.ui.progress.setValue(0)
+        if len(self.fnames) > 0:
+            self.ui.progress.setMaximum(len(self.fnames))
+            self.ui.progress.setValue(0)
 
         for index, fname in enumerate(self.fnames):
             self.ui.progress.setValue(index)
@@ -125,6 +126,7 @@ class BatchDialog(QDialog):
                                  + "encountered a problem..."))
                     print(e)
 
-        self.ui.progress.setValue(len(self.fnames))
-        time.sleep(2)
-        self.ui.progress.setValue(0)
+        if len(self.fnames) > 0:
+            self.ui.progress.setValue(len(self.fnames))
+            time.sleep(2)
+            self.ui.progress.setValue(0)
