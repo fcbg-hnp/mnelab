@@ -82,16 +82,24 @@ class BatchDialog(QDialog):
 
             # Filtering
             if self.ui.filterBox.isChecked():
-                low = float(self.ui.low.text())
-                high = float(self.ui.high.text())
-                data.filter(low, high)
-                ending = ending + '_filtered_{}-{}'.format(low, high)
+                try:
+                    low = float(self.ui.low.text())
+                    high = float(self.ui.high.text())
+                    data.filter(low, high)
+                    ending = ending + '_filtered_{}-{}'.format(low, high)
+                except Exception as e:
+                    print("Error while filtering...")
+                    print(e)
 
             # Resampling
             if self.ui.samplingBox.isChecked():
-                sfreq = float(self.ui.sfreq.text())
-                data.resample(sfreq)
-                ending = ending + '_resampled_{}'.format(sfreq)
+                try:
+                    sfreq = float(self.ui.sfreq.text())
+                    data.resample(sfreq)
+                    ending = ending + '_resampled_{}'.format(sfreq)
+                except Exception as e:
+                    print("Error while resampling...")
+                    print(e)
 
             if (self.ui.filterBox.isChecked() or
                     self.ui.samplingBox.isChecked()):
