@@ -139,8 +139,7 @@ class Model:
         if ext.lower() in [".edf", ".bdf"]:
             raw = mne.io.read_raw_edf(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_edf('{}')".format(fname),
-                "preload=True)")
+                "raw = mne.io.read_raw_edf('{}', preload=True)".format(fname))
         elif ext in [".fif"]:
             try:
                 raw = mne.io.read_raw_fif(fname, preload=True)
@@ -155,33 +154,32 @@ class Model:
                     evoked = None
                     montage = eeg_to_montage(epochs)
                     self.history.append(
-                        "epochs = mne.read_epochs('{}', ".format(fname)
-                        + "preload=True)")
+                        "epochs = mne.read_epochs('{}', preload=True)"
+                        .format(fname))
                 except ValueError:
                     evoked = mne.read_evokeds(fname)
                     epochs = None
                     montage = eeg_to_montage(evoked)
                     self.history.append(
-                        "evoked = mne.read_evokeds('{}')".format(fname))
+                        "evoked = mne.read_evokeds('{}')"
+                        .format(fname))
 
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_brainvision('{}',".format(fname),
-                " preload=True)")
+                "raw = mne.io.read_raw_brainvision('{}',  preload=True)"
+                .format(fname))
         elif ext in [".set"]:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_eeglab('{}', ".format(fname),
-                "preload=True)")
-
+                "raw = mne.io.read_raw_eeglab('{}', preload=True)"
+                .format(fname))
         elif ext in [".sef"]:
             from .utils.read import read_sef
             raw = read_sef(fname)
             raw.load_data()
             self.history.append(
-                "raw = read_sef'{}', ".format(fname),
-                "preload=True")
+                "raw = read_sef'{}', preload=True)".format(fname))
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw, epochs=epochs,
@@ -722,11 +720,12 @@ class Model:
         self.history.append("raw.set_annotations(annotations)")
 
     @data_changed
-    def epoch_data(self, selected, tmin, tmax):
+    def epoch_data(self, selected, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["raw"], self.current["events"],
                             event_id=selected, tmin=tmin, tmax=tmax,
-                            preload=True)
+                            baseline=baseline, preload=True)
         self.current["raw"] = None
+        self.current["evoked"] = None
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
         self.history.append("epochs = Epochs(raw, events,"

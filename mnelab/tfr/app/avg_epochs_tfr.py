@@ -98,9 +98,10 @@ class AvgTFRWindow(QDialog):
         """Gets called when scaling is changed
         """
         self.index = self.ui.mainSlider.value()
-        self.ui.channelName.setText(
-            self.avg.info['ch_names'][self.avg.picks[self.index]])
-        self.log = self.ui.log.checkState()
+        if self.plotType == 'Time-Frequency plot':
+            self.ui.channelName.setText(
+                self.avg.info['ch_names'][self.avg.picks[self.index]])
+            self.log = self.ui.log.checkState()
         try:
             self.fmax = float(self.ui.fmax.text())
             if self.fmax > self.avg.tfr.freqs[-1]:
