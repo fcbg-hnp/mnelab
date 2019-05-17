@@ -177,6 +177,7 @@ class RawPSDWindow(QDialog):
             # If double click, we plot the PSD
             if click.mouseevent.dblclick:
                 ch = str(click.artist.get_label())
+                print(ch)
                 index = self.psd.info['ch_names'].index(ch)
                 index = self.psd.picks.index(index)
                 _plot_single_psd(self, index + 1)

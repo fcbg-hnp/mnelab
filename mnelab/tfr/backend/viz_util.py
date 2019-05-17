@@ -2,12 +2,15 @@ import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from matplotlib.backends.backend_qt5agg \
+    import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg \
+    import NavigationToolbar2QT as NavigationToolbar
 
 
 # ---------------------------------------------------------------------
 def _prepare_single_psd_plot(win):
-    """Prepare the plot for the PSD plot
-    """
+    """Prepare the plot for the PSD plot."""
     plt.close('all')
     fig = plt.figure(figsize=(5, 5))
     gs = fig.add_gridspec(3, 4)
@@ -26,8 +29,7 @@ def _prepare_single_psd_plot(win):
 
 # ---------------------------------------------------------------------
 def _plot_legend_topomap(win, ax, channel_picked):
-    """Plot the little topomap legend for the PSD plot
-    """
+    """Plot the little topomap legend for the PSD plot."""
     from mne.viz import plot_topomap
     import numpy as np
     from matplotlib.colors import ListedColormap
@@ -52,11 +54,20 @@ def _plot_legend_topomap(win, ax, channel_picked):
 
 # ---------------------------------------------------------------------
 def _set_psd_window(win, fig):
-    """Setup the pop-up PSD window
-    """
-    win = fig.canvas.manager.window
-    win.setWindowModality(Qt.WindowModal)
-    win.setWindowTitle("PSD")
-    win.resize(1400, 1000)
-    win.findChild(QStatusBar).hide()
-    fig.show()
+    """Setup the pop-up PSD window."""
+    dialog = QDialog(parent=win)
+    layout = QVBoxLayout(dialog)
+    canvas = FigureCanvas(fig)
+    layout.addWidget(canvas)
+    canvas.draw()
+
+    buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                 QDialogButtonBox.Cancel)
+    layout.addWidget(buttonbox)
+    buttonbox.accepted.connect(dialog.accept)
+    buttonbox.rejected.connect(dialog.reject)
+
+    dialog.setWindowModality(Qt.WindowModal)
+    dialog.setWindowTitle("PSD")
+    dialog.resize(1400, 1000)
+    dialog.exec()

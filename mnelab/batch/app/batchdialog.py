@@ -4,10 +4,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-import mne
-
 from .batch_ui import Ui_BatchDialog
-from .utils import _read, init_avg_tfr, init_epochs_psd, init_raw_psd
+from .batch import _batch_process
 from .tfr import TimeFreqDialog
 from .psd import PSDDialog
 
@@ -67,75 +65,4 @@ class BatchDialog(QDialog):
 
     def batch_process(self):
         """Starts batch processing."""
-        if len(self.fnames) > 0:
-            progress = QProgressDialog("Running Batch Processing...",
-                                       "Abort", 0, len(self.fnames),
-                                       parent=self)
-            progress.setWindowModality(Qt.WindowModal)
-
-        for index, fname in enumerate(self.fnames):
-            progress.setValue(index)
-            data, type = _read(fname)
-            ending = ''
-            if progress.wasCanceled():
-                break
-
-            # Filtering
-            if self.ui.filterBox.isChecked():
-                try:
-                    low = float(self.ui.low.text())
-                    high = float(self.ui.high.text())
-                    data.filter(low, high)
-                    ending = ending + '_filtered_{}-{}'.format(low, high)
-                except Exception as e:
-                    print("Error while filtering...")
-                    print(e)
-
-            # Resampling
-            if self.ui.samplingBox.isChecked():
-                try:
-                    sfreq = float(self.ui.sfreq.text())
-                    data.resample(sfreq)
-                    ending = ending + '_resampled_{}'.format(sfreq)
-                except Exception as e:
-                    print("Error while resampling...")
-                    print(e)
-
-            if (self.ui.filterBox.isChecked() or
-                    self.ui.samplingBox.isChecked()):
-                name, format = os.path.splitext(os.path.basename(fname))
-                save_name = os.path.join(self.savePath,
-                                         name + ending + format)
-                data.save(save_name, overwrite=True)
-
-            # Computing tfr
-            if self.ui.tfrBox.isChecked():
-                try:
-                    name, format = os.path.splitext(os.path.basename(fname))
-                    save_name = os.path.join(self.savePath,
-                                             name + '_tfr.h5')
-                    avgTfr = init_avg_tfr(data, self.tfr_params)
-                    avgTfr.tfr.save(save_name)
-                except Exception as e:
-                    print(name, (" time-frequency computing "
-                                 + "encountered a problem..."))
-                    print(e)
-
-            # Computing PSD
-            if self.ui.psdBox.isChecked():
-                try:
-                    name, format = os.path.splitext(os.path.basename(fname))
-                    save_name = os.path.join(self.savePath,
-                                             name + '_psd.h5')
-                    if type == 'raw' or type == 'evoked':
-                        psd = init_raw_psd(data, self.psd_params)
-                        psd.save_hdf5(save_name, overwrite=True)
-                    elif type == 'epochs':
-                        psd = init_epochs_psd(data, self.psd_params)
-                        psd.save_hdf5(save_name, overwrite=True)
-                except Exception as e:
-                    print(name, (" PSD computing "
-                                 + "encountered a problem..."))
-                    print(e)
-
-        progress.setValue(len(self.fnames))
+        _batch_process(self)

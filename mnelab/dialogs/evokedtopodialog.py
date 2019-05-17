@@ -53,7 +53,6 @@ class EvokedTopoDialog(QDialog):
             if type in ['eeg', 'mag', 'grad']:
                 n_plot += 1
                 try:
-                    plt.close('all')
                     fig = self.evoked.plot_topomap(
                         times=times, show=False, ch_type=type,
                         title=type + ' ({} channels)'.format(self.chans[type]))
