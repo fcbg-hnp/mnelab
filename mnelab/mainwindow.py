@@ -508,10 +508,10 @@ class MainWindow(QMainWindow):
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         elif self.model.current["evoked"]:
-            plt.close('all')
             nchan = self.model.current["evoked"].info["nchan"]
             fig = self.model.current["evoked"].plot(show=False, gfp=True,
-                                                    spatial_colors=True)
+                                                    spatial_colors=True,
+                                                    selectable=False)
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -535,9 +535,13 @@ class MainWindow(QMainWindow):
 
     def plot_image(self):
         if self.model.current["epochs"]:
-            epochs = self.model.current["epochs"]
-            dialog = NavEpochsDialog(None, epochs)
-            dialog.exec_()
+            try:
+                epochs = self.model.current["epochs"]
+                dialog = NavEpochsDialog(None, epochs)
+                dialog.setWindowModality(Qt.WindowModal)
+                dialog.exec()
+            except Exception as e:
+                print(e)
         elif self.model.current["evoked"]:
             fig = self.model.current["evoked"].plot_image(show=False)
             self.model.history.append("evoked.plot_image()")
@@ -550,12 +554,14 @@ class MainWindow(QMainWindow):
     def plot_states(self):
         if self.model.current["evoked"]:
             dialog = EvokedStatesDialog(None, self.model.current["evoked"])
-            dialog.exec_()
+            dialog.setWindowModality(Qt.NonModal)
+            dialog.show()
 
     def plot_topomaps(self):
         if self.model.current["evoked"]:
             dialog = EvokedTopoDialog(None, self.model.current["evoked"])
-            dialog.exec_()
+            dialog.setWindowModality(Qt.NonModal)
+            dialog.show()
 
     def plot_events(self):
         events = self.model.current["events"]
@@ -571,16 +577,19 @@ class MainWindow(QMainWindow):
         """Plot power spectral density (PSD)."""
         if self.model.current["raw"]:
             raw = self.model.current["raw"]
-            dialog = PSDDialog(self, raw)
-            dialog.exec()
+            dialog = PSDDialog(None, raw)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
         elif self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
-            dialog = PSDDialog(self, epochs)
-            dialog.exec()
+            dialog = PSDDialog(None, epochs)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
-            dialog = PSDDialog(self, evoked)
-            dialog.exec()
+            dialog = PSDDialog(None, evoked)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
 
         try:
             psd = dialog.psd
@@ -594,11 +603,13 @@ class MainWindow(QMainWindow):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
-            dialog = TimeFreqDialog(self, epochs)
+            dialog = TimeFreqDialog(None, epochs)
+            dialog.setWindowModality(Qt.WindowModal)
             dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
-            dialog = TimeFreqDialog(self, evoked)
+            dialog = TimeFreqDialog(None, evoked)
+            dialog.setWindowModality(Qt.WindowModal)
             dialog.exec_()
 
         try:
