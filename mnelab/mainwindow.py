@@ -769,6 +769,8 @@ class MainWindow(QMainWindow):
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
+        if not self.model.current['raw']:
+            dialog.notchedit.setEnabled(False)
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
                 self.auto_duplicate()
