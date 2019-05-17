@@ -203,6 +203,8 @@ class MainWindow(QMainWindow):
             "Plot &Topomaps...", self.plot_topomaps)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
+        self.actions["plot_events"] = plot_menu.addAction("&Events",
+                                                          self.plot_events)
         plot_menu.addSeparator()
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
@@ -355,6 +357,7 @@ class MainWindow(QMainWindow):
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
+            self.actions["plot_events"].setEnabled(raw and events)
             self.actions["plot_ica_components"].setEnabled(enabled and ica
                                                            and montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica
@@ -553,6 +556,16 @@ class MainWindow(QMainWindow):
         if self.model.current["evoked"]:
             dialog = EvokedTopoDialog(None, self.model.current["evoked"])
             dialog.exec_()
+
+    def plot_events(self):
+        events = self.model.current["events"]
+        fig = mne.viz.plot_events(events, show=False)
+        win = fig.canvas.manager.window
+        win.setWindowModality(Qt.WindowModal)
+        win.setWindowTitle("Events")
+        win.findChild(QStatusBar).hide()
+        win.findChild(QToolBar).hide()
+        fig.show()
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
