@@ -658,25 +658,25 @@ class Model:
     def filter(self, low, high, notch_freqs):
         if self.current["raw"]:
             data = self.current["raw"]
-            str = 'raw'
+            type = 'raw'
         elif self.current["epochs"]:
             data = self.current["epochs"]
-            str = 'epochs'
+            type = 'epochs'
         elif self.current["evoked"]:
             data = self.current["evoked"]
-            str = 'evoked'
+            type = 'evoked'
 
         data.filter(low, high)
-        self.history.append(str + ".filter({}, {})".format(low, high))
+        self.history.append(type + ".filter({}, {})".format(low, high))
         self.current["name"] += " (Filter {}-{})".format(low, high)
-        if notch_freqs is not None:
+        if notch_freqs is not None and type == 'raw':
             try:
                 data.notch_filter(notch_freqs)
                 self.history.append(
-                    str + ".notch_filter({})".format(notch_freqs))
+                    type + ".notch_filter({})".format(notch_freqs))
                 self.current["name"] += " (Notch {})".format(notch_freqs)
             except Exception as e:
-                show_error(str(e))
+                show_error('Error', info=str(e))
 
     @data_changed
     def apply_ica(self):
