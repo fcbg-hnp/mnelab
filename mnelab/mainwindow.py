@@ -38,7 +38,7 @@ from .dialogs.batchdialog import BatchDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .utils.ica_utils import (plot_ica_components_with_timeseries,
-                             plot_overlay)
+                              plot_overlay)
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -220,6 +220,8 @@ class MainWindow(QMainWindow):
             "Plot &ICA sources...", self.plot_ica_sources)
         self.actions["plot_correlation_matrix"] = ica_menu.addAction(
             "Plot correlation &matrix...", self.plot_correlation_matrix)
+        self.actions["plot_overlay"] = ica_menu.addAction(
+            "Plot ICA &overlay...", self.plot_ica_overlay)
         self.actions["run_ica"] = ica_menu.addAction(
             "Run &ICA...", self.run_ica)
         self.actions["apply_ica"] = ica_menu.addAction(
