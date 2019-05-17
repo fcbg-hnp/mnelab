@@ -32,7 +32,7 @@ class BatchDialog(QDialog):
     def open_files(self):
         fnames, _ = QFileDialog.getOpenFileNames(
             self, "Select files for batch processing...",
-            "", "*.fif")
+            "", "*.bdf *.edf *.fif *.vhdr *.set *.sef")
         if len(fnames) != 0:
             self.ui.directory.setText(os.path.dirname(fnames[0]))
             if self.savePath == '':

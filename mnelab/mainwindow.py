@@ -173,91 +173,90 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_tfr,
                                      "Export Time-Frequency", "*.hdf"))
         file_menu.addSeparator()
-        self.actions["quit"] = file_menu.addAction("&Quit", self.close,
-                                                   QKeySequence.Quit)
+        self.actions["quit"] = file_menu.addAction(
+            "&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
         self.actions["chan_props"] = edit_menu.addAction(
-            "Channel &properties...",
+            "Edit channel &properties...",
             self.channel_properties)
-        self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
-                                                          self.set_montage)
-        edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
-                                                      self.set_reference)
-        edit_menu.addSeparator()
-        self.actions["events"] = edit_menu.addAction("Events...",
-                                                     self.edit_events)
+        self.actions["set_montage"] = edit_menu.addAction(
+            "Edit &montage...", self.set_montage)
+        self.actions["events"] = edit_menu.addAction(
+            "Edit &events...", self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Data...",
-                                                       self.plot_raw)
-        self.actions["plot_image"] = plot_menu.addAction("Data as &Image...",
-                                                         self.plot_image)
-        self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
-                                                          self.plot_states)
+        self.actions["plot_raw"] = plot_menu.addAction(
+            "Plot &Data...", self.plot_raw)
+        self.actions["plot_image"] = plot_menu.addAction(
+            "Plot data as &Image...", self.plot_image)
+        self.actions["plot_states"] = plot_menu.addAction(
+            "Plot &States...", self.plot_states)
         self.actions["plot_topomaps"] = plot_menu.addAction(
             "Plot &Topomaps...", self.plot_topomaps)
-        self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
-                                                           self.plot_montage)
-        self.actions["plot_events"] = plot_menu.addAction("&Events",
-                                                          self.plot_events)
-        plot_menu.addSeparator()
-        self.actions["plot_psd"] = plot_menu.addAction(
-            "&Power spectral density...", self.plot_psd)
-        self.actions["plot_tfr"] = plot_menu.addAction(
-            "&Time-Frequency...", self.plot_tfr)
-        plot_menu.addSeparator()
-        self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components...", self.plot_ica_components_with_timeseries)
+        self.actions["plot_montage"] = plot_menu.addAction(
+            "Plot Current &montage", self.plot_montage)
 
-        self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "&ICA sources...", self.plot_ica_sources)
-
-        self.actions["plot_correlation_matrix"] = plot_menu.addAction(
-            "Correlation matrix...", self.plot_correlation_matrix)
-
-        tools_menu = self.menuBar().addMenu("&Tools")
-        self.actions["filter"] = tools_menu.addAction("&Filter data...",
-                                                      self.filter_data)
-        self.actions["resample"] = tools_menu.addAction("&Downsample...",
-                                                        self.resample)
-        self.actions["find_events"] = tools_menu.addAction("Find &events...",
-                                                           self.find_events)
-        tools_menu.addSeparator()
-        self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
-                                                       self.run_ica)
-
-        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
-                                                         self.apply_ica)
-        tools_menu.addSeparator()
+        tools_menu = self.menuBar().addMenu("&Preprocessing")
+        self.actions["filter"] = tools_menu.addAction(
+            "&Filter data...", self.filter_data)
+        self.actions["resample"] = tools_menu.addAction(
+            "&Downsample...", self.resample)
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
-        tools_menu.addSeparator()
-        self.actions["add_events"] = tools_menu.addAction(
-            "Setup events as annotation...", self.add_events)
-        tools_menu.addSeparator()
-        self.actions["epoch_data"] = tools_menu.addAction(
-            "Cut data into epochs...", self.epoch_data)
-        self.actions["evoke_data"] = tools_menu.addAction(
-            "Average epochs...", self.evoke_data)
+        self.actions["set_ref"] = tools_menu.addAction(
+            "&Set reference...", self.set_reference)
 
-        view_menu = self.menuBar().addMenu("&View")
-        self.actions["statusbar"] = view_menu.addAction("Statusbar",
-                                                        self._toggle_statusbar)
-        self.actions["statusbar"].setCheckable(True)
+        ica_menu = self.menuBar().addMenu("&ICA")
+        self.actions["plot_ica_components"] = ica_menu.addAction(
+            "Plot ICA &components...",
+            self.plot_ica_components_with_timeseries)
+        self.actions["plot_ica_sources"] = ica_menu.addAction(
+            "Plot &ICA sources...", self.plot_ica_sources)
+        self.actions["plot_correlation_matrix"] = ica_menu.addAction(
+            "Plot correlation &matrix...", self.plot_correlation_matrix)
+        self.actions["run_ica"] = ica_menu.addAction(
+            "Run &ICA...", self.run_ica)
+        self.actions["apply_ica"] = ica_menu.addAction(
+            "Apply &ICA...", self.apply_ica)
+
+        freq_menu = self.menuBar().addMenu("&Frequencies")
+        self.actions["plot_psd"] = freq_menu.addAction(
+            "&Power spectral density...", self.plot_psd)
+        self.actions["plot_tfr"] = freq_menu.addAction(
+            "&Time-Frequency...", self.plot_tfr)
+
+        events_menu = self.menuBar().addMenu("&Events")
+        self.actions["plot_events"] = events_menu.addAction(
+            "&Plot events...", self.plot_events)
+        events_menu.addSeparator()
+        self.actions["find_events"] = events_menu.addAction(
+            "Find &events...", self.find_events)
+        self.actions["add_events"] = events_menu.addAction(
+            "Setup events as annotation...", self.add_events)
+
+        epochs_menu = self.menuBar().addMenu("Epochs")
+        self.actions["epoch_data"] = epochs_menu.addAction(
+            "Cut data into epochs...", self.epoch_data)
+        self.actions["evoke_data"] = epochs_menu.addAction(
+            "Average epochs...", self.evoke_data)
 
         batch_menu = self.menuBar().addMenu("&Batch")
         self.actions["open_batch"] = batch_menu.addAction(
             "Open &Batch processing window", self.open_batch)
 
+        view_menu = self.menuBar().addMenu("&View")
+        self.actions["statusbar"] = view_menu.addAction(
+            "Statusbar", self._toggle_statusbar)
+        self.actions["statusbar"].setCheckable(True)
+
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
-        self.actions["about_qt"] = help_menu.addAction("About &Qt",
-                                                       self.show_about_qt)
+        self.actions["about_qt"] = help_menu.addAction(
+            "About &Qt", self.show_about_qt)
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit",
