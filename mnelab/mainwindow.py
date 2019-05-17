@@ -34,9 +34,11 @@ from .dialogs.navepochsdialog import NavEpochsDialog
 from .dialogs.resampledialog import ResampleDialog
 from .dialogs.evokedstatesdialog import EvokedStatesDialog
 from .dialogs.evokedtopodialog import EvokedTopoDialog
-
+from .dialogs.batchdialog import BatchDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
+from .utils.ica_utils import (plot_ica_components_with_timeseries,
+                              plot_overlay)
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -172,89 +174,97 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_tfr,
                                      "Export Time-Frequency", "*.hdf"))
         file_menu.addSeparator()
-        self.actions["quit"] = file_menu.addAction("&Quit", self.close,
-                                                   QKeySequence.Quit)
+        self.actions["quit"] = file_menu.addAction(
+            "&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
         self.actions["chan_props"] = edit_menu.addAction(
-            "Channel &properties...",
+            "Edit channel &properties...",
             self.channel_properties)
-        self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
-                                                          self.set_montage)
-        edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
-                                                      self.set_reference)
-        edit_menu.addSeparator()
-        self.actions["events"] = edit_menu.addAction("Events...",
-                                                     self.edit_events)
+        self.actions["set_montage"] = edit_menu.addAction(
+            "Edit &montage...", self.set_montage)
+        self.actions["events"] = edit_menu.addAction(
+            "Edit &events...", self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Data...",
-                                                       self.plot_raw)
-        self.actions["plot_image"] = plot_menu.addAction("Data as &Image...",
-                                                         self.plot_image)
-        self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
-                                                          self.plot_states)
+        self.actions["plot_raw"] = plot_menu.addAction(
+            "Plot &Data...", self.plot_raw)
+        self.actions["plot_image"] = plot_menu.addAction(
+            "Plot data as &Image...", self.plot_image)
+        self.actions["plot_states"] = plot_menu.addAction(
+            "Plot &States...", self.plot_states)
         self.actions["plot_topomaps"] = plot_menu.addAction(
             "Plot &Topomaps...", self.plot_topomaps)
-        self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
-                                                           self.plot_montage)
-        plot_menu.addSeparator()
-        self.actions["plot_psd"] = plot_menu.addAction(
-            "&Power spectral density...", self.plot_psd)
-        self.actions["plot_tfr"] = plot_menu.addAction(
-            "&Time-Frequency...", self.plot_tfr)
-        plot_menu.addSeparator()
-        self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components...", self.plot_ica_components)
+        self.actions["plot_montage"] = plot_menu.addAction(
+            "Plot Current &montage", self.plot_montage)
 
-        self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "&ICA sources...", self.plot_ica_sources)
+        tools_menu = self.menuBar().addMenu("&Preprocessing")
+        self.actions["filter"] = tools_menu.addAction(
+            "&Filter data...", self.filter_data)
+        self.actions["resample"] = tools_menu.addAction(
+            "&Downsample...", self.resample)
 
-        self.actions["plot_correlation_matrix"] = plot_menu.addAction(
-            "Correlation matrix...", self.plot_correlation_matrix)
-
-        tools_menu = self.menuBar().addMenu("&Tools")
-        self.actions["filter"] = tools_menu.addAction("&Filter data...",
-                                                      self.filter_data)
-        self.actions["resample"] = tools_menu.addAction("&Downsample...",
-                                                        self.resample)
-        self.actions["find_events"] = tools_menu.addAction("Find &events...",
-                                                           self.find_events)
-        tools_menu.addSeparator()
-        self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
-                                                       self.run_ica)
-
-        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
-                                                         self.apply_ica)
-        tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
-        tools_menu.addSeparator()
-        self.actions["add_events"] = tools_menu.addAction(
+        self.actions["set_ref"] = tools_menu.addAction(
+            "&Set reference...", self.set_reference)
+
+        ica_menu = self.menuBar().addMenu("&ICA")
+        self.actions["plot_ica_components"] = ica_menu.addAction(
+            "Plot ICA &components...",
+            self.plot_ica_components_with_timeseries)
+        self.actions["plot_ica_sources"] = ica_menu.addAction(
+            "Plot &ICA sources...", self.plot_ica_sources)
+        self.actions["plot_correlation_matrix"] = ica_menu.addAction(
+            "Plot correlation &matrix...", self.plot_correlation_matrix)
+        self.actions["plot_overlay"] = ica_menu.addAction(
+            "Plot ICA &overlay...", self.plot_ica_overlay)
+        self.actions["run_ica"] = ica_menu.addAction(
+            "Run &ICA...", self.run_ica)
+        self.actions["apply_ica"] = ica_menu.addAction(
+            "Apply &ICA...", self.apply_ica)
+
+        freq_menu = self.menuBar().addMenu("&Frequencies")
+        self.actions["plot_psd"] = freq_menu.addAction(
+            "&Power spectral density...", self.plot_psd)
+        self.actions["plot_tfr"] = freq_menu.addAction(
+            "&Time-Frequency...", self.plot_tfr)
+
+        events_menu = self.menuBar().addMenu("&Events")
+        self.actions["plot_events"] = events_menu.addAction(
+            "&Plot events...", self.plot_events)
+        events_menu.addSeparator()
+        self.actions["find_events"] = events_menu.addAction(
+            "Find &events...", self.find_events)
+        self.actions["add_events"] = events_menu.addAction(
             "Setup events as annotation...", self.add_events)
-        tools_menu.addSeparator()
-        self.actions["epoch_data"] = tools_menu.addAction(
+
+        epochs_menu = self.menuBar().addMenu("Epochs")
+        self.actions["epoch_data"] = epochs_menu.addAction(
             "Cut data into epochs...", self.epoch_data)
-        self.actions["evoke_data"] = tools_menu.addAction(
+        self.actions["evoke_data"] = epochs_menu.addAction(
             "Average epochs...", self.evoke_data)
 
+        batch_menu = self.menuBar().addMenu("&Batch")
+        self.actions["open_batch"] = batch_menu.addAction(
+            "Open &Batch processing window", self.open_batch)
+
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["statusbar"] = view_menu.addAction("Statusbar",
-                                                        self._toggle_statusbar)
+        self.actions["statusbar"] = view_menu.addAction(
+            "Statusbar", self._toggle_statusbar)
         self.actions["statusbar"].setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
-        self.actions["about_qt"] = help_menu.addAction("About &Qt",
-                                                       self.show_about_qt)
+        self.actions["about_qt"] = help_menu.addAction(
+            "About &Qt", self.show_about_qt)
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit",
-                               "statusbar"]
+                               "statusbar", "open_batch"]
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
@@ -350,12 +360,15 @@ class MainWindow(QMainWindow):
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
+            self.actions["plot_events"].setEnabled(raw and events)
             self.actions["plot_ica_components"].setEnabled(enabled and ica
                                                            and montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
-                enabled and ica and events and montage)
+                enabled and ica and montage)
+            self.actions["plot_overlay"].setEnabled(
+                enabled and ica and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
             self.actions["events"].setEnabled(enabled and events)
@@ -459,9 +472,13 @@ class MainWindow(QMainWindow):
             if dialog.montage_path == '':
                 name = dialog.montages.selectedItems()[0].data(0)
                 montage = mne.channels.read_montage(name)
+                self.model.history.append("montage = mne.channels."
+                                        + ("read_montage({})").format(name))
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
+                self.model.history.append("montage = xyz_to_montage({})".format(
+                                                           dialog.montage_path))
             if self.model.current["raw"]:
                 ch_names = self.model.current["raw"].info["ch_names"]
             elif self.model.current["epochs"]:
@@ -500,10 +517,10 @@ class MainWindow(QMainWindow):
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         elif self.model.current["evoked"]:
-            plt.close('all')
             nchan = self.model.current["evoked"].info["nchan"]
             fig = self.model.current["evoked"].plot(show=False, gfp=True,
-                                                    spatial_colors=True)
+                                                    spatial_colors=True,
+                                                    selectable=False)
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -527,9 +544,13 @@ class MainWindow(QMainWindow):
 
     def plot_image(self):
         if self.model.current["epochs"]:
-            epochs = self.model.current["epochs"]
-            dialog = NavEpochsDialog(None, epochs)
-            dialog.exec_()
+            try:
+                epochs = self.model.current["epochs"]
+                dialog = NavEpochsDialog(None, epochs)
+                dialog.setWindowModality(Qt.WindowModal)
+                dialog.exec()
+            except Exception as e:
+                print(e)
         elif self.model.current["evoked"]:
             fig = self.model.current["evoked"].plot_image(show=False)
             self.model.history.append("evoked.plot_image()")
@@ -542,54 +563,72 @@ class MainWindow(QMainWindow):
     def plot_states(self):
         if self.model.current["evoked"]:
             dialog = EvokedStatesDialog(None, self.model.current["evoked"])
-            dialog.exec_()
+            dialog.setWindowModality(Qt.NonModal)
+            dialog.show()
 
     def plot_topomaps(self):
         if self.model.current["evoked"]:
             dialog = EvokedTopoDialog(None, self.model.current["evoked"])
-            dialog.exec_()
+            dialog.setWindowModality(Qt.NonModal)
+            dialog.show()
+
+    def plot_events(self):
+        events = self.model.current["events"]
+        fig = mne.viz.plot_events(events, show=False)
+        win = fig.canvas.manager.window
+        win.setWindowModality(Qt.WindowModal)
+        win.setWindowTitle("Events")
+        win.findChild(QStatusBar).hide()
+        win.findChild(QToolBar).hide()
+        fig.show()
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
         if self.model.current["raw"]:
             raw = self.model.current["raw"]
-            dialog = PSDDialog(self, raw)
-            dialog.exec()
+            dialog = PSDDialog(None, raw)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
         elif self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
-            dialog = PSDDialog(self, epochs)
-            dialog.exec()
+            dialog = PSDDialog(None, epochs)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
-            dialog = PSDDialog(self, evoked)
-            dialog.exec()
+            dialog = PSDDialog(None, evoked)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.exec_()
 
         try:
-            self.model.current["psd"] = dialog.psd
-            self.data_changed()
+            psd = dialog.psd
         except Exception as e:
-            self.model.current["psd"] = None
+            psd = None
+        if psd is not None:
+            self.model.current["psd"] = psd
             self.data_changed()
-            print(e)
 
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
-            dialog = TimeFreqDialog(self, epochs)
+            dialog = TimeFreqDialog(None, epochs)
+            dialog.setWindowModality(Qt.WindowModal)
             dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
-            dialog = TimeFreqDialog(self, evoked)
+            dialog = TimeFreqDialog(None, evoked)
+            dialog.setWindowModality(Qt.WindowModal)
             dialog.exec_()
 
         try:
-            self.model.current["tfr"] = dialog.avgTFR.tfr
+            tfr = dialog.avgTFR.tfr
             self.data_changed()
         except Exception as e:
-            self.model.current["tfr"] = None
+            tfr = None
+        if tfr is not None:
+            self.model.current["tfr"] = tfr
             self.data_changed()
-            print(e)
 
     def plot_montage(self):
         """Plot current montage."""
@@ -619,17 +658,28 @@ class MainWindow(QMainWindow):
         win.findChild(QToolBar).hide()
         fig.show()
 
-    def plot_ica_components(self):
-        plt.close('all')
+    def plot_ica_components_with_timeseries(self):
         if self.model.current["raw"]:
-            fig = self.model.current["ica"].plot_components(
-                    inst=self.model.current["raw"])
+            try:
+                fig = plot_ica_components_with_timeseries(
+                                             self.model.current["ica"],
+                                             inst=self.model.current["raw"])
+            except Exception as e:
+                QMessageBox.critical(self, "Unexpected error ", str(e))
+
         elif self.model.current["epochs"]:
-            fig = self.model.current["ica"].plot_components(
-                    inst=self.model.current["epochs"])
+            try:
+                fig = plot_ica_components_with_timeseries(
+                            self.model.current["ica"],
+                            inst=self.model.current["epochs"])
+            except Exception as e:
+                try:
+                    fig = self.model.current["ica"].plot_ica_components(
+                                            inst=self.model.current["epochs"])
+                except Exception as e:
+                    QMessageBox.critical(self, "Unexpected error ", str(e))
 
     def plot_ica_sources(self):
-        plt.close('all')
         if self.model.current["raw"]:
             fig = (self.model.current["ica"]
                    .plot_sources(inst=self.model.current["raw"]))
@@ -642,12 +692,32 @@ class MainWindow(QMainWindow):
         win.installEventFilter(self)  # detect if the figure is closed
 
     def plot_correlation_matrix(self):
-        plt.close('all')
         if self.model.current["raw"]:
-            plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
         elif self.model.current["epochs"]:
-            plot_cormat(self.model.current["epochs"],
-                        self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["epochs"],
+                            self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
+
+    def plot_ica_overlay(self):
+        if self.model.current["raw"]:
+            plot_overlay(self.model.current["ica"], self.model.current["raw"])
+        elif self.model.current["epochs"]:
+            plot_overlay(self.model.current["ica"], self.model.current["epochs"])
+        return()
 
     def run_ica(self):
         """Run ICA calculation."""
@@ -668,8 +738,10 @@ class MainWindow(QMainWindow):
             have_sklearn = True
         if self.model.current["raw"]:
             data = self.model.current["raw"]
+            inst_type = "raw"
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
+            inst_type = "epochs"
         nchan = len(pick_types(data.info,
                                meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
@@ -678,31 +750,23 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-
-            if dialog.groupBox_advancedparameters.isChecked():
-                n_components = int(dialog.n_components.text())
-                max_pca_components = int(dialog.max_pca_components.text())
-                n_pca_components = int(dialog.pca_components.text())
-                random_state = int(dialog.random_seed.text())
-                max_iter = int(dialog.max_iter.text())
-                ica = mne.preprocessing.ICA(
-                    method=dialog.methods[method],
-                    n_components=n_components,
-                    max_pca_components=max_pca_components,
-                    n_pca_components=n_pca_components,
-                    random_state=random_state,
-                    max_iter=max_iter)
-            else:
-                n_components = int(dialog.n_components.text())
-                max_iter = 500
-                random_state = 42
-                ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                            n_components=n_components,
-                                            random_state=random_state,
-                                            max_iter=max_iter)
+            decim = int(dialog.decim.text())
+            n_components = int(dialog.n_components.text())
+            max_pca_components = int(dialog.max_pca_components.text())
+            n_pca_components = int(dialog.pca_components.text())
+            random_state = int(dialog.random_seed.text())
+            max_iter = int(dialog.max_iter.text())
+            ica = mne.preprocessing.ICA(
+                method=dialog.methods[method],
+                n_components=n_components,
+                max_pca_components=max_pca_components,
+                n_pca_components=n_pca_components,
+                random_state=random_state,
+                max_iter=max_iter)
 
             pool = mp.Pool(1)
-            kwds = {"reject_by_annotation": exclude_bad_segments}
+            kwds = {"reject_by_annotation": exclude_bad_segments,
+                    "decim": decim}
             res = pool.apply_async(func=ica.fit,
                                    args=(data,),
                                    kwds=kwds, callback=lambda x: calc.accept())
@@ -711,6 +775,17 @@ class MainWindow(QMainWindow):
             else:
                 self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
+                self.model.history.append("ica=ICA("
+                    + ("method={} ,").format(dialog.methods[method])
+                    + ("n_components={}, ").format(n_components)
+                    + ("max_pca_components={}, ").format(max_pca_components)
+                    + ("n_pca_components={}, ").format(n_pca_components)
+                    + ("random_state={}, ").format(random_state)
+                    + ("max_iter={})").format(max_iter))
+                self.model.history.append("ica.fit("
+                    + ("inst={}, ").format(inst_type)
+                    + ("decim={}, ").format(decim)
+                    + ("reject_by_annotation={})").format(exclude_bad_segments))
                 self.data_changed()
 
     def apply_ica(self):
@@ -736,7 +811,11 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-        dialog = FilterDialog(self)
+        if self.model.current['raw']:
+            israw=True
+        else:
+            israw=False
+        dialog = FilterDialog(self, israw)
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
                 self.auto_duplicate()
@@ -786,10 +865,26 @@ class MainWindow(QMainWindow):
             try:
                 tmin = float(dialog.tmin.text())
                 tmax = float(dialog.tmax.text())
-                self.auto_duplicate()
-                self.model.epoch_data(selected, tmin, tmax)
             except ValueError as e:
                 show_error('Unable to compute epochs...', info=str(e))
+            else:
+                if dialog.baseline.isChecked():
+                    try:
+                        a = float(float(dialog.a.text()))
+                    except ValueError:
+                        a = None
+
+                    try:
+                        b = float(float(dialog.b.text()))
+                    except ValueError:
+                        b = None
+
+                    baseline = (a, b)
+                else:
+                    baseline = None
+
+                self.auto_duplicate()
+                self.model.epoch_data(selected, tmin, tmax, baseline)
 
     def evoke_data(self):
         """Compute the mean of epochs."""
@@ -806,6 +901,11 @@ class MainWindow(QMainWindow):
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)
+
+    def open_batch(self):
+        """Open batch processing dialog."""
+        dialog = BatchDialog(self)
+        dialog.exec_()
 
     def show_about(self):
         """Show About dialog."""

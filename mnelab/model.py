@@ -139,8 +139,7 @@ class Model:
         if ext.lower() in [".edf", ".bdf"]:
             raw = mne.io.read_raw_edf(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_edf('{}')".format(fname),
-                "preload=True)")
+                "raw = mne.io.read_raw_edf('{}', preload=True)".format(fname))
         elif ext in [".fif"]:
             try:
                 raw = mne.io.read_raw_fif(fname, preload=True)
@@ -155,33 +154,32 @@ class Model:
                     evoked = None
                     montage = eeg_to_montage(epochs)
                     self.history.append(
-                        "epochs = mne.read_epochs('{}', ".format(fname)
-                        + "preload=True)")
+                        "epochs = mne.read_epochs('{}', preload=True)"
+                        .format(fname))
                 except ValueError:
                     evoked = mne.read_evokeds(fname)
                     epochs = None
                     montage = eeg_to_montage(evoked)
                     self.history.append(
-                        "evoked = mne.read_evokeds('{}')".format(fname))
+                        "evoked = mne.read_evokeds('{}')"
+                        .format(fname))
 
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_brainvision('{}',".format(fname),
-                " preload=True)")
+                "raw = mne.io.read_raw_brainvision('{}',  preload=True)"
+                .format(fname))
         elif ext in [".set"]:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
             self.history.append(
-                "raw = mne.io.read_raw_eeglab('{}', ".format(fname),
-                "preload=True)")
-
+                "raw = mne.io.read_raw_eeglab('{}', preload=True)"
+                .format(fname))
         elif ext in [".sef"]:
             from .utils.read import read_sef
             raw = read_sef(fname)
             raw.load_data()
             self.history.append(
-                "raw = read_sef'{}', ".format(fname),
-                "preload=True")
+                "raw = read_sef'{}', preload=True)".format(fname))
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw, epochs=epochs,
@@ -200,7 +198,13 @@ class Model:
                                  shortest_event=shortest_event)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.history.append("events = mne.find_events(raw)")
+            self.history.append('events = mne.find_events(self.current["raw"], '
+                                 + "stim_channel={}, ".format(stim_channel)
+                                 + "consecutive={}, ".format(consecutive)
+                                 + "initial_event={}, ".format(initial_event)
+                                 + "uint_cast={}, ".format(uint_cast)
+                                 + "min_duration={}, ".format(min_duration)
+                                 + "shortest_event={})".format(shortest_event))
 
     def export_data(self, fname):
         """Export raw to file."""
@@ -215,9 +219,15 @@ class Model:
             elif ext in (".edf", ".bdf"):
                 self._export_edf(fname)
             elif ext == ".vhdr":
-                philistine.mne.write_raw_brainvision(
-                    self.current["raw"], fname)
-
+                if self.current["raw"].info["bads"] != []:
+                    self.export_bads(join(split(fname)[0], name + "_bads.csv"))
+                    raw_to_save = self.current["raw"].copy()
+                    raw_to_save.info["bads"] = []
+                    philistine.mne.write_raw_brainvision(
+                        raw_to_save, fname)
+                else:
+                    philistine.mne.write_raw_brainvision(
+                        self.current["raw"], fname)
         elif self.current["epochs"]:
             if ext == ".fif":
                 self.current["epochs"].save(fname)
@@ -352,14 +362,18 @@ class Model:
                 bads = txtfile.readline().rstrip('\n').split(" ")
         unknown = set(bads) - set(self.current["raw"].info["ch_names"])
         known = set(bads) - set(unknown)
+
         if unknown:
             msg = ("The following imported channel labels are not " +
                    "present in the data: " + ",".join(unknown))
             self.current["raw"].info["bads"] += known
+            self.history.append(('raw.info["bads"] += {}').format(known))
             self.view.data_changed()
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
+            self.history.append(('raw.info["bads"] += {}').format(bads))
+        self.current["raw"].info["bads"] = list(set(self.current["raw"].info["bads"]))
 
     @data_changed
     def import_events(self, fname):
@@ -379,6 +393,7 @@ class Model:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
+            self.history.append("Import events from " + fname)
 
         if fname.endswith('.mrk'):
             beg, end, desc = [], [], []
@@ -401,6 +416,7 @@ class Model:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
+            self.history.append("Import events from " + fname)
 
     @data_changed
     def import_annotations(self, fname):
@@ -425,6 +441,8 @@ class Model:
                             durations.append(duration)
             annotations = mne.Annotations(onsets, durations, descs)
             self.current["raw"].annotations = annotations
+            self.history.append("Import annotations from " + fname)
+            self.history.append("raw.annotations = annotations")
 
         if fname.endswith('.mrk'):
             beg, end, desc = [], [], []
@@ -444,10 +462,13 @@ class Model:
             durations = (end - beg) / fs
             annotations = mne.Annotations(onsets, durations, desc)
             self.current["raw"].annotations = annotations
+            self.history.append("Import annotations from " + fname)
+            self.history.append("raw.annotations = annotations")
 
     @data_changed
     def import_ica(self, fname):
         self.current["ica"] = mne.preprocessing.read_ica(fname)
+        self.history.append("ica = read_ica({})".format(fname))
 
     def get_info(self):
         """Get basic information on current data set.
@@ -585,78 +606,90 @@ class Model:
         if self.current["raw"]:
             self.current["raw"] = (self.current["raw"]
                                    .drop_channels(list(drops)))
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
         elif self.current["epochs"]:
             self.current["epochs"] = (self.current["epochs"]
                                       .drop_channels(list(drops)))
-        else:
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
+        elif self.current["evoked"]:
             self.current["evoked"] = (self.current["evoked"]
                                       .drop_channels(list(drops)))
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
         self.current["name"] += " (channels dropped)"
+
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
         if self.current["raw"]:
             if bads:
                 self.current["raw"].info["bads"] = bads
+                self.history.append(('raw.info["bads"]={}').format(bads))
             if names:
                 mne.rename_channels(self.current["raw"].info, names)
+                self.history.append(('rename_channels(raw.info, {}').format(names))
             if types:
                 self.current["raw"].set_channel_types(types)
+                self.history.append(('raw.set_channel_types({}').format(types))
         else:
             if bads:
                 self.current["epochs"].info["bads"] = bads
+                self.history.append(('epochs.info["bads"]={}').format(bads))
             if names:
                 mne.rename_channels(self.current["epochs"].info, names)
+                self.history.append(('rename_channels(epochs.info, {}').format(names))
             if types:
                 self.current["epochs"].set_channel_types(types)
+                self.history.append(('epochs.set_channel_types({}').format(types))
 
     @data_changed
     def set_montage(self, montage):
         self.current["montage"] = montage
         if self.current["raw"]:
             self.current["raw"].set_montage(montage)
-            self.history.append("raw.set_montage()")
+            self.history.append("raw.set_montage(montage)")
         elif self.current["epochs"]:
             self.current["epochs"].set_montage(montage)
-            self.history.append("epochs.set_montage()")
+            self.history.append("epochs.set_montage(montage)")
         elif self.current["evoked"]:
             self.current["evoked"].set_montage(montage)
-            self.history.append("evoked.set_montage()")
+            self.history.append("evoked.set_montage(montage)")
 
     @data_changed
     def filter(self, low, high, notch_freqs):
         if self.current["raw"]:
             data = self.current["raw"]
-            str = 'raw'
+            type = 'raw'
         elif self.current["epochs"]:
             data = self.current["epochs"]
-            str = 'epochs'
+            type = 'epochs'
         elif self.current["evoked"]:
             data = self.current["evoked"]
-            str = 'evoked'
+            type = 'evoked'
 
         data.filter(low, high)
-        self.history.append(str + ".filter({}, {})".format(low, high))
+        self.history.append(type + ".filter({}, {})".format(low, high))
         self.current["name"] += " (Filter {}-{})".format(low, high)
-        if notch_freqs is not None:
+        if notch_freqs is not None and type == 'raw':
             try:
                 data.notch_filter(notch_freqs)
                 self.history.append(
-                    str + ".notch_filter({})".format(notch_freqs))
+                    type + ".notch_filter({})".format(notch_freqs))
                 self.current["name"] += " (Notch {})".format(notch_freqs)
             except Exception as e:
-                show_error(str(e))
+                show_error('Error', info=str(e))
 
     @data_changed
     def apply_ica(self):
         if self.current["raw"]:
             self.current["ica"].apply(self.current["raw"])
+            self.history.append("ica.apply(inst=raw, exclude={})"
+                                    .format(self.current["ica"].exclude))
         if self.current["epochs"]:
             self.current["ica"].apply(self.current["epochs"])
-        if self.current["evoked"]:
-            self.current["ica"].apply(self.current["evoked"])
+            self.history.append("ica.apply(inst=epochs, exclude={})"
+                                    .format(self.current["ica"].exclude))
         self.current["isApplied"] = True
-        self.current["name"] += " applied_ica"
+        self.current["name"] += "_applied_ica"
 
     @data_changed
     def interpolate_bads(self):
@@ -664,10 +697,11 @@ class Model:
             if eeg_to_montage(self.current["raw"]) is not None:
                 self.current["raw"].interpolate_bads(reset_bads=True)
                 self.current["name"] += " (Interpolated)"
+                self.history.append("raw.interpolate_bads(reset_bads=True)")
         else:
             if eeg_to_montage(self.current["epochs"]) is not None:
                 self.current["epochs"].interpolate_bads(reset_bads=True)
-                self.current["name"] += " (Interpolated)"
+                self.history.append("epochs.interpolate_bads(reset_bads=True)")
 
     @data_changed
     def add_events(self):
@@ -677,17 +711,28 @@ class Model:
         durations = np.zeros(events.shape[0])
         desc = np.array([str(e) for e in events[:, 1]])
         annot = Annotations(onsets, durations, desc)
+        self.history.append("annotations = "
+                          + "Annotations({}, {}, {})".format(onsets,
+                                                             durations,
+                                                             desc))
         self.current['raw'].set_annotations(annot)
         self.current["name"] += " (events added)"
+        self.history.append("raw.set_annotations(annotations)")
 
     @data_changed
-    def epoch_data(self, selected, tmin, tmax):
+    def epoch_data(self, selected, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["raw"], self.current["events"],
                             event_id=selected, tmin=tmin, tmax=tmax,
-                            preload=True)
+                            baseline=baseline, preload=True)
         self.current["raw"] = None
+        self.current["evoked"] = None
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
+        self.history.append("epochs = Epochs(raw, events,"
+                          + ("event_id={}, ").format(selected)
+                          + ("tmin={}, ").format(tmin)
+                          + ("tmax={}, ").format(tmax)
+                          + ("preload=True)"))
 
     @data_changed
     def evoke_data(self):
@@ -696,20 +741,26 @@ class Model:
         self.current["epochs"] = None
         self.current["evoked"] = evoked
         self.current["name"] += " (evoked)"
+        self.history.append("evoked = epochs.average()")
 
     @data_changed
     def set_reference(self, ref):
-        self.current["reference"] = ref
         if ref == "average":
+            self.current["reference"] = ref
             self.current["name"] += " (average ref)"
             if self.current["raw"]:
                 self.current["raw"].set_eeg_reference(ref, projection=False)
+                self.history.append("raw.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
             elif self.current["epochs"]:
                 self.current["epochs"].set_eeg_reference(ref, projection=False)
+                self.history.append("epochs.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
             elif self.current["evoked"]:
                 self.current["evoked"].set_eeg_reference(ref, projection=False)
+                self.history.append("evoked.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
         else:
-            self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["raw"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
@@ -722,9 +773,22 @@ class Model:
                     elif self.current["evoked"]:
                         mne.add_reference_channels(self.current["evoked"], ref,
                                                    copy=False)
+                    self.current["name"] += " (" + ",".join(ref) + ")"
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")
             else:
                 # re-reference to existing channel(s)
-                self.current["raw"].set_eeg_reference(ref, projection=False)
+                self.current["name"] += " (average ref)"
+                if self.current["raw"]:
+                    self.current["raw"].set_eeg_reference(ref, projection=False)
+                    self.history.append("raw.set_eeg_reference({}, projection=False)"
+                                            .format(ref))
+                elif self.current["epochs"]:
+                    self.current["epochs"].set_eeg_reference(ref, projection=False)
+                    self.history.append("epochs.set_eeg_reference({}, projection=False)"
+                                            .format(ref))
+                elif self.current["evoked"]:
+                    self.current["evoked"].set_eeg_reference(ref, projection=False)
+                    self.history.append("evoked.set_eeg_reference({}, projection=False)"
+                                            .format(ref))

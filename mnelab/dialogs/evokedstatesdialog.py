@@ -53,7 +53,6 @@ class EvokedStatesDialog(QDialog):
         self.to_delete = []
         times = self.times.text().replace(' ', '').split(',')
         try:
-            plt.close('all')
             figs = self.evoked.plot_joint(times=times, show=False)
         except Exception as e:
             figs = plt.figure()
