@@ -641,11 +641,12 @@ class MainWindow(QMainWindow):
     def plot_ica_components_with_timeseries(self):
         plt.close('all')
         if self.model.current["raw"]:
-            fig = plot_ica_components_with_timeseries(self.model.current["ica"],
-                                             inst=self.model.current["raw"])
+            fig = plot_ica_components_with_timeseries(
+                    self.model.current["ica"],
+                    inst=self.model.current["raw"])
         elif self.model.current["epochs"]:
             fig = (self.model.current["ica"]
-                    .plot_components(inst=self.model.current["epochs"]))
+                   .plot_components(inst=self.model.current["epochs"]))
 
     def plot_ica_sources(self):
         plt.close('all')
@@ -721,7 +722,8 @@ class MainWindow(QMainWindow):
                                             max_iter=max_iter)
 
             pool = mp.Pool(1)
-            kwds = {"reject_by_annotation": exclude_bad_segments, "decim": decim}
+            kwds = {"reject_by_annotation": exclude_bad_segments,
+                    "decim": decim}
             res = pool.apply_async(func=ica.fit,
                                    args=(data,),
                                    kwds=kwds, callback=lambda x: calc.accept())
@@ -805,10 +807,26 @@ class MainWindow(QMainWindow):
             try:
                 tmin = float(dialog.tmin.text())
                 tmax = float(dialog.tmax.text())
-                self.auto_duplicate()
-                self.model.epoch_data(selected, tmin, tmax)
             except ValueError as e:
                 show_error('Unable to compute epochs...', info=str(e))
+            else:
+                if dialog.baseline.isChecked():
+                    try:
+                        a = float(float(dialog.a.text()))
+                    except ValueError:
+                        a = None
+
+                    try:
+                        b = float(float(dialog.b.text()))
+                    except ValueError:
+                        b = None
+
+                    baseline = (a, b)
+                else:
+                    baseline = None
+
+                self.auto_duplicate()
+                self.model.epoch_data(selected, tmin, tmax, baseline)
 
     def evoke_data(self):
         """Compute the mean of epochs."""

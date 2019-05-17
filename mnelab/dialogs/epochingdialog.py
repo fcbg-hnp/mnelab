@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                              QLineEdit, QDialogButtonBox, QComboBox,
                              QPushButton, QListWidget, QStatusBar,
-                             QToolBar)
+                             QToolBar, QCheckBox)
 from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QDoubleValidator
 
@@ -32,6 +32,12 @@ class EpochingDialog(QDialog):
         self.tmax = QLineEdit(self)
         grid.addWidget(self.tmin, 2, 1, 1, 1)
         grid.addWidget(self.tmax, 2, 2, 1, 1)
+        self.baseline = QCheckBox("&Baseline Correction")
+        grid.addWidget(self.baseline, 3, 0, 1, 1)
+        self.a = QLineEdit(self)
+        self.b = QLineEdit(self)
+        grid.addWidget(self.a, 3, 1, 1, 1)
+        grid.addWidget(self.b, 3, 2, 1, 1)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
         buttonbox.accepted.connect(self.accept)

@@ -367,7 +367,8 @@ class Model:
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
-        self.current["raw"].info["bads"] = list(set(self.current["raw"].info["bads"]))
+        self.current["raw"].info["bads"] = list(set(self.current["raw"]
+                                                    .info["bads"]))
 
     @data_changed
     def import_events(self, fname):
@@ -689,11 +690,12 @@ class Model:
         self.current["name"] += " (events added)"
 
     @data_changed
-    def epoch_data(self, selected, tmin, tmax):
+    def epoch_data(self, selected, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["raw"], self.current["events"],
                             event_id=selected, tmin=tmin, tmax=tmax,
-                            preload=True)
+                            baseline=baseline, preload=True)
         self.current["raw"] = None
+        self.current["evoked"] = None
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
 
