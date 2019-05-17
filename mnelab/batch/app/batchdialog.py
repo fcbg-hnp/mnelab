@@ -67,26 +67,39 @@ class BatchDialog(QDialog):
 
     def batch_process(self):
         """Starts batch processing."""
-        self.ui.progress.setMaximum(len(self.fnames))
-        self.ui.progress.setValue(0)
+        if len(self.fnames) > 0:
+            progress = QProgressDialog("Running Batch Processing...",
+                                       "Abort", 0, len(self.fnames),
+                                       parent=self)
+            progress.setWindowModality(Qt.WindowModal)
 
         for index, fname in enumerate(self.fnames):
-            self.ui.progress.setValue(index)
+            progress.setValue(index)
             data, type = _read(fname)
             ending = ''
+            if progress.wasCanceled():
+                break
 
             # Filtering
             if self.ui.filterBox.isChecked():
-                low = float(self.ui.low.text())
-                high = float(self.ui.high.text())
-                data.filter(low, high)
-                ending = ending + '_filtered_{}-{}'.format(low, high)
+                try:
+                    low = float(self.ui.low.text())
+                    high = float(self.ui.high.text())
+                    data.filter(low, high)
+                    ending = ending + '_filtered_{}-{}'.format(low, high)
+                except Exception as e:
+                    print("Error while filtering...")
+                    print(e)
 
             # Resampling
             if self.ui.samplingBox.isChecked():
-                sfreq = float(self.ui.sfreq.text())
-                data.resample(sfreq)
-                ending = ending + '_resampled_{}'.format(sfreq)
+                try:
+                    sfreq = float(self.ui.sfreq.text())
+                    data.resample(sfreq)
+                    ending = ending + '_resampled_{}'.format(sfreq)
+                except Exception as e:
+                    print("Error while resampling...")
+                    print(e)
 
             if (self.ui.filterBox.isChecked() or
                     self.ui.samplingBox.isChecked()):
@@ -125,6 +138,4 @@ class BatchDialog(QDialog):
                                  + "encountered a problem..."))
                     print(e)
 
-        self.ui.progress.setValue(len(self.fnames))
-        time.sleep(2)
-        self.ui.progress.setValue(0)
+        progress.setValue(len(self.fnames))
