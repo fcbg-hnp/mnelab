@@ -36,7 +36,7 @@ In general, it is recommended to always use the latest package versions.
 MNELAB comes with the following features that are not available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
-- Import Cartool format (.sef)
+- Import Cartool format (.sef )
 - Import/Export to brainvision format (.vhdr)
 
 ### Installation
