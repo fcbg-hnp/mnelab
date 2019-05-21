@@ -13,6 +13,12 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 from mne import pick_types
 from collections import Counter
+from .tfr.backend.avg_epochs_tfr import AvgEpochsTFR
+from .tfr.app.avg_epochs_tfr import AvgTFRWindow
+from .tfr.backend.epochs_psd import EpochsPSD
+from .tfr.app.epochs_psd import EpochsPSDWindow
+from .tfr.backend.raw_psd import RawPSD
+from .tfr.app.raw_psd import RawPSDWindow
 
 
 from .utils.error import show_error
@@ -228,6 +234,12 @@ class MainWindow(QMainWindow):
             "&Power spectral density...", self.plot_psd)
         self.actions["plot_tfr"] = freq_menu.addAction(
             "&Time-Frequency...", self.plot_tfr)
+        freq_menu.addSeparator()
+        self.actions["open_tfr"] = freq_menu.addAction(
+            "&Open Time-frequency data (in development)", self.open_tfr)
+        self.actions["open_psd"] = freq_menu.addAction(
+            "&Open power spectrum density data (in development)",
+            self.open_psd)
 
         events_menu = self.menuBar().addMenu("&Events")
         self.actions["plot_events"] = events_menu.addAction(
@@ -260,7 +272,8 @@ class MainWindow(QMainWindow):
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit",
-                               "statusbar", "open_batch"]
+                               "statusbar", "open_batch", "open_tfr",
+                               "open_psd"]
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
@@ -598,6 +611,19 @@ class MainWindow(QMainWindow):
             self.model.current["psd"] = psd
             self.data_changed()
 
+    def open_psd(self):
+        fname = QFileDialog.getOpenFileName(self, "Open TFR",
+                                            filter="*.h5 *.hdf")[0]
+        try:
+            psd = EpochsPSD().init_from_hdf(fname)
+            win = EpochsPSDWindow(psd, parent=None)
+            win.exec()
+        except Exception as e:
+            print(e)
+            psd = RawPSD().init_from_hdf(fname)
+            win = RawPSDWindow(psd, parent=None)
+            win.exec()
+
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
@@ -619,6 +645,13 @@ class MainWindow(QMainWindow):
         if tfr is not None:
             self.model.current["tfr"] = tfr
             self.data_changed()
+
+    def open_tfr(self):
+        fname = QFileDialog.getOpenFileName(self, "Open TFR",
+                                            filter="*.h5 *.hdf")[0]
+        avgTFR = AvgEpochsTFR().init_from_hdf(fname)
+        win = AvgTFRWindow(avgTFR, parent=None)
+        win.exec()
 
     def plot_montage(self):
         """Plot current montage."""

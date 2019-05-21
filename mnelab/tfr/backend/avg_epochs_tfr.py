@@ -162,7 +162,6 @@ class AvgEpochsTFR:
             names.append(name)
             locs.append(loc)
         locs = np.array(locs)
-
         self.picks = [i for i in range(len(names))]
         montage = mne.channels.Montage(locs, names, 'custom',
                                        [i for i in range(len(locs))])
@@ -210,7 +209,8 @@ class AvgEpochsTFR:
             self.with_coord = [i for i in range(len(self.picks))]
 
         self.info = mne.create_info(names, 1, montage=montage,
-                                    ch_types=ch_types)
+                                    ch_types='eeg')
+        # eeg is just a trick to not raise valueError...
         self.tfr = mne.time_frequency.AverageTFR(
             self.info, data, times, freqs, len(self.picks))
         return self
