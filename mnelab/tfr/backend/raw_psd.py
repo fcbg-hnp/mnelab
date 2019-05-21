@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
 from numpy import log
+import mne
+import numpy as np
+import h5py
 
 
 class RawPSD:
@@ -42,7 +45,7 @@ class RawPSD:
 
     """
     # --------------------------------------------------------------------------
-    def __init__(self, raw, fmin=0, fmax=1500,
+    def __init__(self, raw=None, fmin=0, fmax=1500,
                  tmin=None, tmax=None, type='all',
                  method='multitaper', picks=None,
                  **kwargs):
@@ -52,109 +55,198 @@ class RawPSD:
         """
         from .util import eeg_to_montage
 
-        if type == 'eeg':
-            raw = raw.copy().pick_types(meg=False, eeg=True)
-        if type == 'mag':
-            raw = raw.copy().pick_types(meg='mag')
-        if type == 'grad':
-            raw = raw.copy().pick_types(meg='grad')
-        self.fmin, self.fmax = fmin, fmax
-        self.tmin, self.tmax = tmin, tmax
-        self.info = raw.info
-        self.method = method
-        self.bandwidth = kwargs.get('bandwidth', 4.)
-        self.n_fft = kwargs.get('n_fft', 256)
-        self.n_per_seg = kwargs.get('n_per_seg', self.n_fft)
-        self.n_overlap = kwargs.get('n_overlap', 0)
-        self.cmap = 'jet'
+        if raw is not None:
+            if type == 'eeg':
+                raw = raw.copy().pick_types(meg=False, eeg=True)
+            if type == 'mag':
+                raw = raw.copy().pick_types(meg='mag')
+            if type == 'grad':
+                raw = raw.copy().pick_types(meg='grad')
+            self.fmin, self.fmax = fmin, fmax
+            self.tmin, self.tmax = tmin, tmax
+            self.info = raw.info
+            self.method = method
+            self.bandwidth = kwargs.get('bandwidth', 4.)
+            self.n_fft = kwargs.get('n_fft', 256)
+            self.n_per_seg = kwargs.get('n_per_seg', self.n_fft)
+            self.n_overlap = kwargs.get('n_overlap', 0)
+            self.cmap = 'jet'
 
-        if picks is not None:
-            self.picks = picks
-        else:
-            self.picks = list(range(0, len(raw.info['ch_names'])))
-        for bad in raw.info['bads']:
-            try:
-                bad_pick = raw.info['ch_names'].index(bad)
-                self.picks.remove(bad_pick)
-            except Exception as e:
-                print(e)
-
-        montage = eeg_to_montage(raw)
-        if montage is not None:
-            # First we create variable head_pos for a correct plotting
-            self.pos = montage.get_pos2d()
-            scale = 0.85 / (self.pos.max(axis=0) - self.pos.min(axis=0))
-            center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
-            self.head_pos = {'scale': scale, 'center': center}
-
-            # Handling of possible channels without any known coordinates
-            no_coord_channel = False
-            try:
-                names = montage.ch_names
-                indices = [names.index(raw.info['ch_names'][i])
-                           for i in self.picks]
-                self.pos = self.pos[indices, :]
-            except Exception as e:
-                print(e)
-                no_coord_channel = True
-
-            # If there is not as much positions as the number of Channels
-            # we have to eliminate some channels from the data of topomaps
-            if no_coord_channel:
-                from mne.channels import read_montage
-                from numpy import array
-
-                index = 0
-                self.pos = []           # positions
-                # index in the self.data of channels with coordinates
-                self.with_coord = []
-                for i in self.picks:
-                    ch_name = raw.info['ch_names'][i]
-                    try:
-                        ch_montage = read_montage(
-                            montage.kind, ch_names=[ch_name])
-                        coord = ch_montage.get_pos2d()
-                        self.pos.append(coord[0])
-                        self.with_coord.append(index)
-                    except Exception as e:
-                        print(e)
-                        pass
-                    index += 1
-                self.pos = array(self.pos)
-
+            if picks is not None:
+                self.picks = picks
             else:
-                self.with_coord = [i for i in range(len(self.picks))]
+                self.picks = list(range(0, len(raw.info['ch_names'])))
+            for bad in raw.info['bads']:
+                try:
+                    bad_pick = raw.info['ch_names'].index(bad)
+                    self.picks.remove(bad_pick)
+                except Exception as e:
+                    print(e)
 
-        else:  # If there is no montage available
-            self.head_pos = None
+            montage = eeg_to_montage(raw)
+            if montage is not None:
+                # First we create variable head_pos for a correct plotting
+                self.pos = montage.get_pos2d()
+                scale = 0.85 / (self.pos.max(axis=0) - self.pos.min(axis=0))
+                center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
+                self.head_pos = {'scale': scale, 'center': center}
+
+                # Handling of possible channels without any known coordinates
+                no_coord_channel = False
+                try:
+                    names = montage.ch_names
+                    indices = [names.index(raw.info['ch_names'][i])
+                               for i in self.picks]
+                    self.pos = self.pos[indices, :]
+                except Exception as e:
+                    print(e)
+                    no_coord_channel = True
+
+                # If there is not as much positions as the number of Channels
+                # we have to eliminate some channels from the data of topomaps
+                if no_coord_channel:
+                    from mne.channels import read_montage
+                    from numpy import array
+
+                    index = 0
+                    self.pos = []           # positions
+                    # index in the self.data of channels with coordinates
+                    self.with_coord = []
+                    for i in self.picks:
+                        ch_name = raw.info['ch_names'][i]
+                        try:
+                            ch_montage = read_montage(
+                                montage.kind, ch_names=[ch_name])
+                            coord = ch_montage.get_pos2d()
+                            self.pos.append(coord[0])
+                            self.with_coord.append(index)
+                        except Exception as e:
+                            print(e)
+                            pass
+                        index += 1
+                    self.pos = array(self.pos)
+
+                else:
+                    self.with_coord = [i for i in range(len(self.picks))]
+
+            else:  # If there is no montage available
+                self.head_pos = None
+                self.with_coord = []
+
+            if method == 'multitaper':
+                from mne.time_frequency import psd_multitaper
+
+                self.data, self.freqs = psd_multitaper(
+                    raw,
+                    fmin=fmin,
+                    fmax=fmax,
+                    tmin=tmin,
+                    tmax=tmax,
+                    normalization='full',
+                    bandwidth=self.bandwidth,
+                    picks=self.picks)
+
+            if method == 'welch':
+                from mne.time_frequency import psd_welch
+
+                self.data, self.freqs = psd_welch(
+                    raw,
+                    fmin=fmin,
+                    fmax=fmax,
+                    tmin=tmin,
+                    tmax=tmax,
+                    n_fft=self.n_fft,
+                    n_overlap=self.n_overlap,
+                    n_per_seg=self.n_per_seg,
+                    picks=self.picks)
+        else:
+            self.data = None
+            self.freqs = None
+            self.cmap = 'jet'
+
+    # ------------------------------------------------------------------------
+    def init_from_hdf(self, fname):
+        """Init the class from an hdf file."""
+        channel_types = mne.io.pick.get_channel_types()
+
+        # Start by initializing everything
+        f = h5py.File(fname, 'r+')
+        dic = f['mnepython']
+        self.data = dic['key_data'][()]
+        if self.data.ndim != 2:
+            raise ValueError('Data of incorrect dimension')
+        self.freqs = dic['key_freqs'][()]
+        self.method = ''.join([chr(x) for x in dic['key_method'][()]])
+        chs = dic['key_info']['key_chs']
+        names = []
+        locs = []
+        ch_types = []
+        for key in chs.keys():
+            ch = chs[key]
+            ch_val = ch['key_kind'][()][0]
+            for t, rules in channel_types.items():
+                for key, vals in rules.items():
+                    try:
+                        if ch['key_' + key] not in np.array(vals):
+                            break
+                    except Exception:
+                        break
+                else:
+                    ch_types.append(t)
+            name = ''.join([chr(x) for x in ch['key_ch_name']])
+            loc = ch['key_loc'][()][0:3]
+            names.append(name)
+            locs.append(loc)
+        locs = np.array(locs)
+        self.picks = [i for i in range(len(names))]
+        montage = mne.channels.Montage(locs, names, 'custom',
+                                       [i for i in range(len(locs))])
+        # First we create variable head_pos for a correct plotting
+        self.pos = montage.get_pos2d()
+        scale = 0.85 / (self.pos.max(axis=0) - self.pos.min(axis=0))
+        center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
+        self.head_pos = {'scale': scale, 'center': center}
+
+        # Handling of possible channels without any known coordinates
+        no_coord_channel = False
+        try:
+            names = montage.ch_names
+            indices = self.picks
+            self.pos = self.pos[indices, :]
+        except Exception as e:
+            print(e)
+            no_coord_channel = True
+
+        # If there is not as much positions as the number of Channels
+        # we have to eliminate some channels from the data of topomaps
+        if no_coord_channel:
+            from mne.channels import read_montage
+            from numpy import array
+
+            index = 0
+            self.pos = []           # positions
+            # index in the self.data of channels with coordinates
             self.with_coord = []
 
-        if method == 'multitaper':
-            from mne.time_frequency import psd_multitaper
+            for i in self.picks:
+                ch_name = epochs.info['ch_names'][i]
+                try:
+                    ch_montage = read_montage(
+                        montage.kind, ch_names=[ch_name])
+                    coord = ch_montage.get_pos2d()
+                    self.pos.append(coord[0])
+                    self.with_coord.append(index)
+                except Exception as e:
+                    print(e)
+                index += 1
+            self.pos = array(self.pos)
 
-            self.data, self.freqs = psd_multitaper(
-                raw,
-                fmin=fmin,
-                fmax=fmax,
-                tmin=tmin,
-                tmax=tmax,
-                normalization='full',
-                bandwidth=self.bandwidth,
-                picks=self.picks)
+        else:
+            self.with_coord = [i for i in range(len(self.picks))]
 
-        if method == 'welch':
-            from mne.time_frequency import psd_welch
-
-            self.data, self.freqs = psd_welch(
-                raw,
-                fmin=fmin,
-                fmax=fmax,
-                tmin=tmin,
-                tmax=tmax,
-                n_fft=self.n_fft,
-                n_overlap=self.n_overlap,
-                n_per_seg=self.n_per_seg,
-                picks=self.picks)
+        self.info = mne.create_info(names, 1, montage=montage,
+                                    ch_types='eeg')
+        return self
 
     # --------------------------------------------------------------------------
     def plot_topomap(self, freq_index, axes=None, log_display=False):
