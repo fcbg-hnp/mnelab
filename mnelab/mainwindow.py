@@ -43,7 +43,8 @@ from .dialogs.evokedtopodialog import EvokedTopoDialog
 from .dialogs.batchdialog import BatchDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
-from .utils.ica_utils import plot_ica_components_with_timeseries
+from .utils.ica_utils import (plot_ica_components_with_timeseries,
+                             plot_overlay)
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -211,6 +212,7 @@ class MainWindow(QMainWindow):
             "&Filter data...", self.filter_data)
         self.actions["resample"] = tools_menu.addAction(
             "&Downsample...", self.resample)
+
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
         self.actions["set_ref"] = tools_menu.addAction(
@@ -375,7 +377,9 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_sources"].setEnabled(enabled and ica
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
-                enabled and ica and events and montage)
+                enabled and ica and montage)
+            self.actions["plot_overlay"].setEnabled(
+                enabled and ica and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
             self.actions["events"].setEnabled(enabled and events)
@@ -479,9 +483,13 @@ class MainWindow(QMainWindow):
             if dialog.montage_path == '':
                 name = dialog.montages.selectedItems()[0].data(0)
                 montage = mne.channels.read_montage(name)
+                self.model.history.append("montage = mne.channels."
+                                        + ("read_montage({})").format(name))
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
+                self.model.history.append("montage = xyz_to_montage({})".format(
+                                                           dialog.montage_path))
             if self.model.current["raw"]:
                 ch_names = self.model.current["raw"].info["ch_names"]
             elif self.model.current["epochs"]:
@@ -682,17 +690,27 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components_with_timeseries(self):
-        plt.close('all')
         if self.model.current["raw"]:
-            fig = plot_ica_components_with_timeseries(
-                    self.model.current["ica"],
-                    inst=self.model.current["raw"])
+            try:
+                fig = plot_ica_components_with_timeseries(
+                                             self.model.current["ica"],
+                                             inst=self.model.current["raw"])
+            except Exception as e:
+                QMessageBox.critical(self, "Unexpected error ", str(e))
+
         elif self.model.current["epochs"]:
-            fig = (self.model.current["ica"]
-                   .plot_components(inst=self.model.current["epochs"]))
+            try:
+                fig = plot_ica_components_with_timeseries(
+                            self.model.current["ica"],
+                            inst=self.model.current["epochs"])
+            except Exception as e:
+                try:
+                    fig = self.model.current["ica"].plot_ica_components(
+                                            inst=self.model.current["epochs"])
+                except Exception as e:
+                    QMessageBox.critical(self, "Unexpected error ", str(e))
 
     def plot_ica_sources(self):
-        plt.close('all')
         if self.model.current["raw"]:
             fig = (self.model.current["ica"]
                    .plot_sources(inst=self.model.current["raw"]))
@@ -705,12 +723,32 @@ class MainWindow(QMainWindow):
         win.installEventFilter(self)  # detect if the figure is closed
 
     def plot_correlation_matrix(self):
-        plt.close('all')
         if self.model.current["raw"]:
-            plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
         elif self.model.current["epochs"]:
-            plot_cormat(self.model.current["epochs"],
-                        self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["epochs"],
+                            self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
+
+    def plot_ica_overlay(self):
+        if self.model.current["raw"]:
+            plot_overlay(self.model.current["ica"], self.model.current["raw"])
+        elif self.model.current["epochs"]:
+            plot_overlay(self.model.current["ica"], self.model.current["epochs"])
+        return()
 
     def run_ica(self):
         """Run ICA calculation."""
@@ -731,8 +769,10 @@ class MainWindow(QMainWindow):
             have_sklearn = True
         if self.model.current["raw"]:
             data = self.model.current["raw"]
+            inst_type = "raw"
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
+            inst_type = "epochs"
         nchan = len(pick_types(data.info,
                                meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
@@ -742,27 +782,18 @@ class MainWindow(QMainWindow):
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
             decim = int(dialog.decim.text())
-            if dialog.groupBox_advancedparameters.isChecked():
-                n_components = int(dialog.n_components.text())
-                max_pca_components = int(dialog.max_pca_components.text())
-                n_pca_components = int(dialog.pca_components.text())
-                random_state = int(dialog.random_seed.text())
-                max_iter = int(dialog.max_iter.text())
-                ica = mne.preprocessing.ICA(
-                    method=dialog.methods[method],
-                    n_components=n_components,
-                    max_pca_components=max_pca_components,
-                    n_pca_components=n_pca_components,
-                    random_state=random_state,
-                    max_iter=max_iter)
-            else:
-                n_components = int(dialog.n_components.text())
-                max_iter = 500
-                random_state = 42
-                ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                            n_components=n_components,
-                                            random_state=random_state,
-                                            max_iter=max_iter)
+            n_components = int(dialog.n_components.text())
+            max_pca_components = int(dialog.max_pca_components.text())
+            n_pca_components = int(dialog.pca_components.text())
+            random_state = int(dialog.random_seed.text())
+            max_iter = int(dialog.max_iter.text())
+            ica = mne.preprocessing.ICA(
+                method=dialog.methods[method],
+                n_components=n_components,
+                max_pca_components=max_pca_components,
+                n_pca_components=n_pca_components,
+                random_state=random_state,
+                max_iter=max_iter)
 
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments,
@@ -775,6 +806,17 @@ class MainWindow(QMainWindow):
             else:
                 self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
+                self.model.history.append("ica=ICA("
+                    + ("method={} ,").format(dialog.methods[method])
+                    + ("n_components={}, ").format(n_components)
+                    + ("max_pca_components={}, ").format(max_pca_components)
+                    + ("n_pca_components={}, ").format(n_pca_components)
+                    + ("random_state={}, ").format(random_state)
+                    + ("max_iter={})").format(max_iter))
+                self.model.history.append("ica.fit("
+                    + ("inst={}, ").format(inst_type)
+                    + ("decim={}, ").format(decim)
+                    + ("reject_by_annotation={})").format(exclude_bad_segments))
                 self.data_changed()
 
     def apply_ica(self):
@@ -800,9 +842,11 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-        dialog = FilterDialog(self)
-        if not self.model.current['raw']:
-            dialog.notchedit.setEnabled(False)
+        if self.model.current['raw']:
+            israw=True
+        else:
+            israw=False
+        dialog = FilterDialog(self, israw)
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
                 self.auto_duplicate()
