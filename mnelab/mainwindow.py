@@ -537,7 +537,7 @@ class MainWindow(QMainWindow):
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
-        win.setWindowTitle("Data")
+        win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
         win.installEventFilter(self)  # detect if the figure is closed
 
@@ -570,6 +570,7 @@ class MainWindow(QMainWindow):
             win = fig.canvas.manager.window
             win.setWindowTitle("Data as Image")
             win.findChild(QStatusBar).hide()
+            win.setWindowTitle(self.model.current["name"])
             win.installEventFilter(self)  # detect if the figure is closed
             fig.show()
 
@@ -577,12 +578,14 @@ class MainWindow(QMainWindow):
         if self.model.current["evoked"]:
             dialog = EvokedStatesDialog(None, self.model.current["evoked"])
             dialog.setWindowModality(Qt.NonModal)
+            dialog.setWindowTitle(self.model.current["name"])
             dialog.show()
 
     def plot_topomaps(self):
         if self.model.current["evoked"]:
             dialog = EvokedTopoDialog(None, self.model.current["evoked"])
             dialog.setWindowModality(Qt.NonModal)
+            dialog.setWindowTitle(self.model.current["name"])
             dialog.show()
 
     def plot_events(self):
@@ -590,7 +593,7 @@ class MainWindow(QMainWindow):
         fig = mne.viz.plot_events(events, show=False)
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
-        win.setWindowTitle("Events")
+        win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
