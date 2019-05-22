@@ -601,16 +601,19 @@ class MainWindow(QMainWindow):
             raw = self.model.current["raw"]
             dialog = PSDDialog(None, raw)
             dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
             dialog.exec_()
         elif self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = PSDDialog(None, epochs)
             dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
             dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
             dialog = PSDDialog(None, evoked)
             dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
             dialog.exec_()
 
         try:
@@ -640,11 +643,13 @@ class MainWindow(QMainWindow):
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(None, epochs)
             dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
             dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
             dialog = TimeFreqDialog(None, evoked)
             dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
             dialog.exec_()
 
         try:

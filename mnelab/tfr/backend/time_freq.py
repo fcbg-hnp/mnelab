@@ -289,6 +289,7 @@ def _open_epochs_psd_visualizer(self):
     _init_epochs_psd(self)
     psdVisualizer = EpochsPSDWindow(self.psd, parent=None)
     psdVisualizer.setWindowModality(Qt.WindowModal)
+    psdVisualizer.setWindowTitle(self.windowTitle())
     psdVisualizer.exec()
 
 
@@ -302,6 +303,7 @@ def _open_raw_psd_visualizer(self):
 
     psdVisualizer = RawPSDWindow(self.psd, parent=None)
     psdVisualizer.setWindowModality(Qt.WindowModal)
+    psdVisualizer.setWindowTitle(self.windowTitle())
     psdVisualizer.exec()
 
 
@@ -340,6 +342,7 @@ def _open_tfr_visualizer(self):
         _init_avg_tfr(self)
         tfrVisualizer = AvgTFRWindow(self.avgTFR, parent=None)
         tfrVisualizer.setWindowModality(Qt.WindowModal)
+        tfrVisualizer.setWindowTitle(self.windowTitle())
         tfrVisualizer.exec()
 
     except Exception as e:
