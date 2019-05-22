@@ -35,9 +35,8 @@ from mne.viz.utils import (tight_layout, _setup_vmin_vmax, _prepare_trellis,
                            _setup_cmap, _check_time_unit, _compute_scalings)
 from mne.defaults import _handle_default
 from mne.io.meas_info import Info
-from mne.externals.six import string_types
 from mne.viz.topomap import (_prepare_topo_plot, _check_outlines, plot_topomap,
-                            _hide_frame, plot_ica_components, _plot_topomap)
+                             _hide_frame, plot_ica_components, _plot_topomap)
 
 
 def plot_correlation_matrix(raw, ica):
