@@ -12,8 +12,8 @@ from .ui.epochs_psd_UI import Ui_EpochsPSDWindow
 
 
 class EpochsPSDWindow(QDialog):
-    """PSDWindow class, which enable to visualize the PSDs for epochs
-    """
+    """PSDWindow class, which enable to visualize the PSDs for epochs."""
+
     def __init__(self, epochsPSD, parent=None):
         super(EpochsPSDWindow, self).__init__(parent)
         self.psd = epochsPSD
@@ -201,7 +201,7 @@ class EpochsPSDWindow(QDialog):
     # ---------------------------------------------------------------------
     def onclick_pick(self, click):
         """Get the line on click and plot a tooltip with the name of
-        the channel
+        the channel.
         """
         from ..backend.util import _annot
         from ..backend.viz_epochs import _plot_single_avg_psd, _plot_single_psd

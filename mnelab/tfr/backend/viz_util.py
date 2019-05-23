@@ -49,7 +49,8 @@ def _plot_legend_topomap(win, ax, channel_picked):
     plot_topomap(zeros, obj.pos, axes=ax, cmap=cmp, mask=mask, show=False,
                  mask_params=dict(marker='.', markersize=18,
                                   markerfacecolor='black',
-                                  markeredgecolor='black'))
+                                  markeredgecolor='black'),
+                 outlines='skirt')
 
 
 # ---------------------------------------------------------------------

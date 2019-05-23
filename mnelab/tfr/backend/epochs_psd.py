@@ -93,7 +93,8 @@ class EpochsPSD:
             if montage is not None:
                 # First we create variable head_pos for a correct plotting
                 self.pos = montage.get_pos2d()
-                scale = 0.85 / (self.pos.max(axis=0) - self.pos.min(axis=0))
+                
+                scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
                 center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
                 self.head_pos = {'scale': scale, 'center': center}
 
@@ -210,7 +211,8 @@ class EpochsPSD:
                                        [i for i in range(len(locs))])
         # First we create variable head_pos for a correct plotting
         self.pos = montage.get_pos2d()
-        scale = 0.85 / (self.pos.max(axis=0) - self.pos.min(axis=0))
+        
+        scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
         center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
         self.head_pos = {'scale': scale, 'center': center}
 
@@ -324,7 +326,8 @@ class EpochsPSD:
             psd_mean = 10 * log(psd_mean)
         return plot_topomap(psd_mean, self.pos, axes=axes,
                             vmin=vmin, vmax=vmax, show=False,
-                            cmap=self.cmap, head_pos=self.head_pos)
+                            cmap=self.cmap, head_pos=self.head_pos,
+                            outlines='skirt', contours=3)
 
     # ------------------------------------------------------------------------
     def plot_avg_topomap_band(self, freq_index_min, freq_index_max,
@@ -347,7 +350,8 @@ class EpochsPSD:
             psd_mean = 10 * log(psd_mean)
         return plot_topomap(psd_mean, self.pos, axes=axes,
                             vmin=vmin, vmax=vmax, show=False,
-                            cmap=self.cmap, head_pos=self.head_pos)
+                            cmap=self.cmap, head_pos=self.head_pos,
+                            outlines='skirt', contours=3)
 
     # ------------------------------------------------------------------------
     def plot_avg_matrix(self, freq_index_min, freq_index_max, axes=None,

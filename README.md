@@ -31,6 +31,7 @@ In general, it is recommended to always use the latest package versions.
 - Basic preprocessing (Filters, resampling, annotations of bads channels, importing of events and annotations, ICA processing, interpolation of bad channels, referencing...)
 - Epoching of raw data with markers or events, Evoking of epoched data. 
 - Visualization tools (Raw data, Interactive epoch image plots, Interactive power spectrum density and Interactive Time-Frequency dialog)
+- Batch processing: Does the same process on a batch of files, like filtering, resampling or computing time-frequency or power spectrum density of each file.
 
 ### Additional features
 MNELAB comes with the following features that are not available in MNE:
