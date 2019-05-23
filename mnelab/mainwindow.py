@@ -738,29 +738,32 @@ class MainWindow(QMainWindow):
     def plot_correlation_matrix(self):
         if self.model.current["raw"]:
             try:
-                plot_cormat(self.model.current["raw"], self.model.current["ica"])
+                plot_cormat(self.model.current["raw"],
+                            self.model.current["ica"])
             except ValueError as e:
-                QMessageBox.critical(self,
-                 "Can't compute correlation with template ", str(e))
+                QMessageBox.critical(
+                 self, "Can't compute correlation with template ", str(e))
             except Exception as e:
-                QMessageBox.critical(self,
-                 "Unexpected error ", str(e))
+                QMessageBox.critical(
+                 self, "Unexpected error ", str(e))
         elif self.model.current["epochs"]:
             try:
                 plot_cormat(self.model.current["epochs"],
                             self.model.current["ica"])
             except ValueError as e:
-                QMessageBox.critical(self,
-                 "Can't compute correlation with template ", str(e))
+                QMessageBox.critical(
+                    self, "Can't compute correlation with template ", str(e))
             except Exception as e:
-                QMessageBox.critical(self,
-                 "Unexpected error ", str(e))
+                QMessageBox.critical(
+                    self, "Unexpected error ", str(e))
 
     def plot_ica_overlay(self):
         if self.model.current["raw"]:
-            plot_overlay(self.model.current["ica"], self.model.current["raw"])
+            plot_overlay(self.model.current["ica"],
+                         self.model.current["raw"])
         elif self.model.current["epochs"]:
-            plot_overlay(self.model.current["ica"], self.model.current["epochs"])
+            plot_overlay(self.model.current["ica"],
+                         self.model.current["epochs"])
         return()
 
     def run_ica(self):
@@ -819,17 +822,20 @@ class MainWindow(QMainWindow):
             else:
                 self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
-                self.model.history.append("ica=ICA("
+                self.model.history.append(
+                    "ica=ICA("
                     + ("method={} ,").format(dialog.methods[method])
                     + ("n_components={}, ").format(n_components)
                     + ("max_pca_components={}, ").format(max_pca_components)
                     + ("n_pca_components={}, ").format(n_pca_components)
                     + ("random_state={}, ").format(random_state)
                     + ("max_iter={})").format(max_iter))
-                self.model.history.append("ica.fit("
+                self.model.history.append(
+                    "ica.fit("
                     + ("inst={}, ").format(inst_type)
                     + ("decim={}, ").format(decim)
-                    + ("reject_by_annotation={})").format(exclude_bad_segments))
+                    + ("reject_by_annotation={})"
+                       .format(exclude_bad_segments)))
                 self.data_changed()
 
     def apply_ica(self):
@@ -856,9 +862,9 @@ class MainWindow(QMainWindow):
     def filter_data(self):
         """Filter data."""
         if self.model.current['raw']:
-            israw=True
+            israw = True
         else:
-            israw=False
+            israw = False
         dialog = FilterDialog(self, israw)
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
