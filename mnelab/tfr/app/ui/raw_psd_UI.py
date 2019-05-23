@@ -33,7 +33,7 @@ class Ui_RawPSDWindow(object):
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setLineWidth(3)
         self.frame.setObjectName("frame")
-        self.frame.setMaximumHeight(100)
+        self.frame.setMaximumHeight(180)
         self.ParametersLayout = QtWidgets.QHBoxLayout(self.frame)
         self.ParametersLayout.setSpacing(6)
         self.ParametersLayout.setObjectName("ParametersLayout")
