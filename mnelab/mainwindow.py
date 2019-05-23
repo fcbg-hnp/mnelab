@@ -633,12 +633,14 @@ class MainWindow(QMainWindow):
         try:
             psd = EpochsPSD().init_from_hdf(fname)
             win = EpochsPSDWindow(psd, parent=None)
+            win.setWindowTitle(fname)
             win.exec()
         except Exception as e:
             print(e)
             try:
                 psd = RawPSD().init_from_hdf(fname)
                 win = RawPSDWindow(psd, parent=None)
+                win.setWindowTitle(fname)
                 win.exec()
             except Exception:
                 pass
@@ -673,6 +675,7 @@ class MainWindow(QMainWindow):
                                                 filter="*.h5 *.hdf")[0]
             avgTFR = AvgEpochsTFR().init_from_hdf(fname)
             win = AvgTFRWindow(avgTFR, parent=None)
+            win.setWindowTitle(fname)
             win.exec()
         except Exception as e:
             print(e)
