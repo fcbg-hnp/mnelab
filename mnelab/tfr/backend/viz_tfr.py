@@ -89,7 +89,8 @@ def _plot_topomap_tfr(self):
             vmin=self.vmin, vmax=self.vmax,
             axes=ax, mode='logratio',
             cmap=self.avg.cmap, show=False,
-            colorbar=True)
+            colorbar=True, outlines='skirt',
+            contours=3)
         ax = fig.get_axes()[1]
         ax.yaxis.set_major_formatter(FormatStrFormatter('%6.1e'))
         ax.tick_params(axis='both', labelsize=10)
