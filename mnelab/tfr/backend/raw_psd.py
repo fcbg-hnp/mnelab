@@ -87,6 +87,7 @@ class RawPSD:
             if montage is not None:
                 # First we create variable head_pos for a correct plotting
                 self.pos = montage.get_pos2d()
+                
                 scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
                 center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
                 self.head_pos = {'scale': scale, 'center': center}
@@ -203,6 +204,7 @@ class RawPSD:
                                        [i for i in range(len(locs))])
         # First we create variable head_pos for a correct plotting
         self.pos = montage.get_pos2d()
+        
         scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
         center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
         self.head_pos = {'scale': scale, 'center': center}

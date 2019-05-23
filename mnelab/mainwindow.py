@@ -228,6 +228,8 @@ class MainWindow(QMainWindow):
             "Plot &ICA sources...", self.plot_ica_sources)
         self.actions["plot_correlation_matrix"] = ica_menu.addAction(
             "Plot correlation &matrix...", self.plot_correlation_matrix)
+        self.actions["run_ica"] = ica_menu.addAction(
+            "Run &ICA...", self.run_ica)
         self.actions["apply_ica"] = ica_menu.addAction(
             "Apply &ICA...", self.apply_ica)
         self.actions["plot_overlay"] = ica_menu.addAction(
