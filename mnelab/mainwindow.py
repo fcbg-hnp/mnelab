@@ -668,11 +668,14 @@ class MainWindow(QMainWindow):
             self.data_changed()
 
     def open_tfr(self):
-        fname = QFileDialog.getOpenFileName(self, "Open TFR",
-                                            filter="*.h5 *.hdf")[0]
-        avgTFR = AvgEpochsTFR().init_from_hdf(fname)
-        win = AvgTFRWindow(avgTFR, parent=None)
-        win.exec()
+        try:
+            fname = QFileDialog.getOpenFileName(self, "Open TFR",
+                                                filter="*.h5 *.hdf")[0]
+            avgTFR = AvgEpochsTFR().init_from_hdf(fname)
+            win = AvgTFRWindow(avgTFR, parent=None)
+            win.exec()
+        except Exception as e:
+            print(e)
 
     def plot_montage(self):
         """Plot current montage."""
