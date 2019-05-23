@@ -636,9 +636,12 @@ class MainWindow(QMainWindow):
             win.exec()
         except Exception as e:
             print(e)
-            psd = RawPSD().init_from_hdf(fname)
-            win = RawPSDWindow(psd, parent=None)
-            win.exec()
+            try:
+                psd = RawPSD().init_from_hdf(fname)
+                win = RawPSDWindow(psd, parent=None)
+                win.exec()
+            except Exception:
+                pass
 
     def plot_tfr(self):
         """Plot Time-Frequency."""
