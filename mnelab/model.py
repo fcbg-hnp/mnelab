@@ -729,10 +729,10 @@ class Model:
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
         self.history.append("epochs = Epochs(raw, events,"
-                          + ("event_id={}, ").format(selected)
-                          + ("tmin={}, ").format(tmin)
-                          + ("tmax={}, ").format(tmax)
-                          + ("preload=True)"))
+                            + ("event_id={}, ").format(selected)
+                            + ("tmin={}, ").format(tmin)
+                            + ("tmax={}, ").format(tmax)
+                            + ("preload=True)"))
 
     @data_changed
     def evoke_data(self):
@@ -750,16 +750,18 @@ class Model:
             self.current["name"] += " (average ref)"
             if self.current["raw"]:
                 self.current["raw"].set_eeg_reference(ref, projection=False)
-                self.history.append("raw.set_eeg_reference({}, projection=False)"
-                                        .format(ref))
+                self.history.append(
+                    "raw.set_eeg_reference({}, projection=False)".format(ref))
             elif self.current["epochs"]:
                 self.current["epochs"].set_eeg_reference(ref, projection=False)
-                self.history.append("epochs.set_eeg_reference({}, projection=False)"
-                                        .format(ref))
+                self.history.append(
+                    "epochs.set_eeg_reference({}, projection=False)"
+                    .format(ref))
             elif self.current["evoked"]:
                 self.current["evoked"].set_eeg_reference(ref, projection=False)
-                self.history.append("evoked.set_eeg_reference({}, projection=False)"
-                                        .format(ref))
+                self.history.append(
+                    "evoked.set_eeg_reference({}, projection=False)"
+                    .format(ref))
         else:
             if set(ref) - set(self.current["raw"].info["ch_names"]):
                 # add new reference channel(s) to data
