@@ -384,6 +384,7 @@ class MainWindow(QMainWindow):
                 enabled and ica and montage)
             self.actions["plot_overlay"].setEnabled(
                 enabled and ica and montage)
+            self.actions["run_ica"].setEnabled(montage and not evoked)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
             self.actions["events"].setEnabled(enabled and events)
@@ -488,12 +489,12 @@ class MainWindow(QMainWindow):
                 name = dialog.montages.selectedItems()[0].data(0)
                 montage = mne.channels.read_montage(name)
                 self.model.history.append("montage = mne.channels."
-                                        + ("read_montage({})").format(name))
+                                          + ("read_montage({})").format(name))
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
-                self.model.history.append("montage = xyz_to_montage({})".format(
-                                                           dialog.montage_path))
+                self.model.history.append("montage = xyz_to_montage({})"
+                                          .format(dialog.montage_path))
             if self.model.current["raw"]:
                 ch_names = self.model.current["raw"].info["ch_names"]
             elif self.model.current["epochs"]:
