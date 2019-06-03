@@ -555,7 +555,8 @@ class Model:
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica + " applied = " + str(self.current["isApplied"]),
+                "ICA": (ica + "  (applied: "
+                        + str(self.current["isApplied"]) + ")"),
                 "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
