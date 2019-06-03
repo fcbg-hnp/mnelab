@@ -562,6 +562,7 @@ class MainWindow(QMainWindow):
                 epochs = self.model.current["epochs"]
                 dialog = NavEpochsDialog(None, epochs)
                 dialog.setWindowModality(Qt.WindowModal)
+                dialog.setWindowTitle(self.model.current["name"])
                 dialog.exec()
             except Exception as e:
                 print(e)
@@ -569,7 +570,6 @@ class MainWindow(QMainWindow):
             fig = self.model.current["evoked"].plot_image(show=False)
             self.model.history.append("evoked.plot_image()")
             win = fig.canvas.manager.window
-            win.setWindowTitle("Data as Image")
             win.findChild(QStatusBar).hide()
             win.setWindowTitle(self.model.current["name"])
             win.installEventFilter(self)  # detect if the figure is closed
@@ -704,7 +704,7 @@ class MainWindow(QMainWindow):
                               ch_type=type, axes=ax, title='')
         win = fig.canvas.manager.window
         win.resize(len(types) * 600, 600)
-        win.setWindowTitle("Montage")
+        win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()

@@ -99,4 +99,4 @@ class Ui_PSD(object):
         TimeFreq.setWindowTitle(_translate("TimeFreq", "Power Spectral Density"))
         self.methodLabel.setText(_translate("TimeFreq", "Method"))
         self.label.setText(_translate("TimeFreq", "Type"))
-        self.psdButton.setText(_translate("TimeFreq", "Compute & Visualize PSD"))
+        self.psdButton.setText(_translate("TimeFreq", "Compute and Visualize PSD"))
