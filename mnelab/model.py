@@ -373,7 +373,8 @@ class Model:
         else:
             self.current["raw"].info["bads"] += bads
             self.history.append(('raw.info["bads"] += {}').format(bads))
-        self.current["raw"].info["bads"] = list(set(self.current["raw"].info["bads"]))
+        self.current["raw"].info["bads"] = list(
+            set(self.current["raw"].info["bads"]))
 
     @data_changed
     def import_events(self, fname):
@@ -440,7 +441,7 @@ class Model:
                             onsets.append(onset)
                             durations.append(duration)
             annotations = mne.Annotations(onsets, durations, descs)
-            self.current["raw"].annotations = annotations
+            self.current["raw"].set_annotations(annotations)
             self.history.append("Import annotations from " + fname)
             self.history.append("raw.annotations = annotations")
 
@@ -461,7 +462,7 @@ class Model:
             onsets = beg / fs
             durations = (end - beg) / fs
             annotations = mne.Annotations(onsets, durations, desc)
-            self.current["raw"].annotations = annotations
+            self.current["raw"].set_annotations(annotations)
             self.history.append("Import annotations from " + fname)
             self.history.append("raw.annotations = annotations")
 
