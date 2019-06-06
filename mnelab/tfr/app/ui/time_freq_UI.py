@@ -82,4 +82,4 @@ class Ui_TimeFreq(object):
         TimeFreq.setWindowTitle(_translate("TimeFreq", "Time-Frequency"))
         self.methodLabel_3.setText(_translate("TimeFreq", "Method"))
         self.label.setText(_translate("TimeFreq", "Type"))
-        self.tfrButton.setText(_translate("TimeFreq", "Open Interactive TFR Window"))
+        self.tfrButton.setText(_translate("TimeFreq", "Compute and Visualize TFR"))

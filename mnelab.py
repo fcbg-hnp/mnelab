@@ -2,9 +2,10 @@ import sys
 import matplotlib
 from PyQt5.QtWidgets import QApplication
 import multiprocessing as mp
-
+import matplotlib.pyplot as plt
 from mnelab import MainWindow, Model
 
+plt.style.use('ggplot')
 
 if __name__ == "__main__":
     mp.set_start_method("spawn")  # required for Linux/macOS

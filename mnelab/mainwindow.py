@@ -228,8 +228,6 @@ class MainWindow(QMainWindow):
             "Plot &ICA sources...", self.plot_ica_sources)
         self.actions["plot_correlation_matrix"] = ica_menu.addAction(
             "Plot correlation &matrix...", self.plot_correlation_matrix)
-        self.actions["run_ica"] = ica_menu.addAction(
-            "Run &ICA...", self.run_ica)
         self.actions["apply_ica"] = ica_menu.addAction(
             "Apply &ICA...", self.apply_ica)
         self.actions["plot_overlay"] = ica_menu.addAction(
@@ -384,6 +382,7 @@ class MainWindow(QMainWindow):
                 enabled and ica and montage)
             self.actions["plot_overlay"].setEnabled(
                 enabled and ica and montage)
+            self.actions["run_ica"].setEnabled(montage and not evoked)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
             self.actions["events"].setEnabled(enabled and events)
@@ -488,12 +487,12 @@ class MainWindow(QMainWindow):
                 name = dialog.montages.selectedItems()[0].data(0)
                 montage = mne.channels.read_montage(name)
                 self.model.history.append("montage = mne.channels."
-                                        + ("read_montage({})").format(name))
+                                          + ("read_montage({})").format(name))
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
-                self.model.history.append("montage = xyz_to_montage({})".format(
-                                                           dialog.montage_path))
+                self.model.history.append("montage = xyz_to_montage({})"
+                                          .format(dialog.montage_path))
             if self.model.current["raw"]:
                 ch_names = self.model.current["raw"].info["ch_names"]
             elif self.model.current["epochs"]:
@@ -563,6 +562,7 @@ class MainWindow(QMainWindow):
                 epochs = self.model.current["epochs"]
                 dialog = NavEpochsDialog(None, epochs)
                 dialog.setWindowModality(Qt.WindowModal)
+                dialog.setWindowTitle(self.model.current["name"])
                 dialog.exec()
             except Exception as e:
                 print(e)
@@ -570,7 +570,6 @@ class MainWindow(QMainWindow):
             fig = self.model.current["evoked"].plot_image(show=False)
             self.model.history.append("evoked.plot_image()")
             win = fig.canvas.manager.window
-            win.setWindowTitle("Data as Image")
             win.findChild(QStatusBar).hide()
             win.setWindowTitle(self.model.current["name"])
             win.installEventFilter(self)  # detect if the figure is closed
@@ -705,7 +704,7 @@ class MainWindow(QMainWindow):
                               ch_type=type, axes=ax, title='')
         win = fig.canvas.manager.window
         win.resize(len(types) * 600, 600)
-        win.setWindowTitle("Montage")
+        win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
