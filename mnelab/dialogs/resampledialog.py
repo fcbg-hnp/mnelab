@@ -6,7 +6,7 @@ from ..utils.information import show_info
 class ResampleDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowTitle("Filter data")
+        self.setWindowTitle("Resample data")
         vbox = QVBoxLayout(self)
         self.sfreqedit = QLineEdit()
         vbox.addWidget(QLabel("Enter Sampling Frequency..."))
