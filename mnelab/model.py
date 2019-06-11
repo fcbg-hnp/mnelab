@@ -766,6 +766,8 @@ class Model:
                     .format(ref))
         else:
             if set(ref) - set(self.current["raw"].info["ch_names"]):
+                self.current["reference"] = ref
+                self.current["name"] += " (average ref)"
                 # add new reference channel(s) to data
                 try:
                     if self.current["raw"]:
