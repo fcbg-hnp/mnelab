@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------------
 def _plot_time_freq(self):
-    """Plot the time-frequency representation
-    """
+    """Plot the time-frequency representation."""
     from .viz_util import _plot_legend_topomap
     self.ui.figure.clear()
     gs = self.ui.figure.add_gridspec(10, 30)
@@ -32,8 +31,7 @@ def _plot_time_freq(self):
 
 # ---------------------------------------------------------------------
 def _plot_freq_ch(self):
-    """Plot the frequency-channel representation
-    """
+    """Plot the frequency-channel representation."""
     self.ui.figure.clear()
     gs = self.ui.figure.add_gridspec(10, 30)
     ax = self.ui.figure.add_subplot(gs[:, :25])
@@ -53,8 +51,7 @@ def _plot_freq_ch(self):
 
 # ---------------------------------------------------------------------
 def _plot_time_ch(self):
-    """Plot the time-channels representation
-    """
+    """Plot the time-channels representation."""
     self.ui.figure.clear()
     gs = self.ui.figure.add_gridspec(10, 30)
     ax = self.ui.figure.add_subplot(gs[:, :25])
@@ -74,8 +71,7 @@ def _plot_time_ch(self):
 
 # ---------------------------------------------------------------------
 def _plot_topomap_tfr(self):
-    """Plot topomap for TFR window
-    """
+    """Plot topomap for TFR window."""
     from matplotlib.ticker import FormatStrFormatter
 
     try:
@@ -89,11 +85,12 @@ def _plot_topomap_tfr(self):
             vmin=self.vmin, vmax=self.vmax,
             axes=ax, mode='logratio',
             cmap=self.avg.cmap, show=False,
-            colorbar=True)
+            colorbar=True, outlines='skirt',
+            contours=3)
         ax = fig.get_axes()[1]
         ax.yaxis.set_major_formatter(FormatStrFormatter('%6.1e'))
         ax.tick_params(axis='both', labelsize=10)
-        ax.set_xlabel('Power', fontsize=10)
+        ax.set_xlabel('Power (Log Ratio)', fontsize=10)
         ax.get_xaxis().labelpad = 15
         self.ui.canvas.draw()
 

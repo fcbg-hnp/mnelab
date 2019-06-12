@@ -35,9 +35,8 @@ from mne.viz.utils import (tight_layout, _setup_vmin_vmax, _prepare_trellis,
                            _setup_cmap, _check_time_unit, _compute_scalings)
 from mne.defaults import _handle_default
 from mne.io.meas_info import Info
-from mne.externals.six import string_types
 from mne.viz.topomap import (_prepare_topo_plot, _check_outlines, plot_topomap,
-                            _hide_frame, plot_ica_components, _plot_topomap)
+                             _hide_frame, plot_ica_components, _plot_topomap)
 
 
 def plot_correlation_matrix(raw, ica):
@@ -363,7 +362,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
     # PLOT
     x = np.linspace(0,len(S), len(S)) / SFREQ
     ax_source = fig.add_subplot(gs01[0, :])
-    ax_source.plot(x, S, color="r", linewidth=linewidth)
+    ax_source.plot(x, S, color="black", linewidth=linewidth)
     ax_source.set_ylabel("source " + str(picks))
     if x[-1] >= 10:
         ax_source.set_xlim(0, 10)

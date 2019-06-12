@@ -31,13 +31,14 @@ In general, it is recommended to always use the latest package versions.
 - Basic preprocessing (Filters, resampling, annotations of bads channels, importing of events and annotations, ICA processing, interpolation of bad channels, referencing...)
 - Epoching of raw data with markers or events, Evoking of epoched data. 
 - Visualization tools (Raw data, Interactive epoch image plots, Interactive power spectrum density and Interactive Time-Frequency dialog)
+- Batch processing: Does the same process on a batch of files, like filtering, resampling or computing time-frequency or power spectrum density of each file.
 
 ### Additional features
 MNELAB comes with the following features that are not available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
-- Import Cartool format (.sef, .vhdr)
-- Export to brainvision format (.vhdr)
+- Import Cartool format (.sef )
+- Import/Export to brainvision format (.vhdr)
 
 ### Installation
 A package on [PyPI](https://pypi.python.org/pypi) will be available soon. Meanwhile, to use MNELAB first install all dependencies (e.g. via `pip` or `conda`) and then [download the source code](https://github.com/cbrnr/mnelab/archive/master.zip). Unpack it into a folder of your choice and run `python3 mnelab.py` in this folder (if this does not work try `python mnelab.py`, just make sure to use Python 3).
