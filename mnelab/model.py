@@ -765,7 +765,16 @@ class Model:
                     "evoked.set_eeg_reference({}, projection=False)"
                     .format(ref))
         else:
-            if set(ref) - set(self.current["raw"].info["ch_names"]):
+            print(ref)
+            self.current["reference"] = ref
+            if self.current["raw"]:
+                data = self.current["raw"]
+            elif self.current["epochs"]:
+                data = self.current["epochs"]
+            elif self.current["evoked"]:
+                data = self.current["evoked"]
+
+            if set(ref) - set(data.info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
                     if self.current["raw"]:
@@ -783,16 +792,22 @@ class Model:
                                             "to average reference signals.")
             else:
                 # re-reference to existing channel(s)
-                self.current["name"] += " (average ref)"
+                self.current["name"] += " (" + ",".join(ref) + ")"
                 if self.current["raw"]:
-                    self.current["raw"].set_eeg_reference(ref, projection=False)
-                    self.history.append("raw.set_eeg_reference({}, projection=False)"
-                                            .format(ref))
+                    self.current["raw"].set_eeg_reference(
+                        ref, projection=False)
+                    self.history.append(
+                        "raw.set_eeg_reference({}, projection=False)"
+                        .format(ref))
                 elif self.current["epochs"]:
-                    self.current["epochs"].set_eeg_reference(ref, projection=False)
-                    self.history.append("epochs.set_eeg_reference({}, projection=False)"
-                                            .format(ref))
+                    self.current["epochs"].set_eeg_reference(
+                        ref, projection=False)
+                    self.history.append(
+                        "epochs.set_eeg_reference({}, projection=False)"
+                        .format(ref))
                 elif self.current["evoked"]:
-                    self.current["evoked"].set_eeg_reference(ref, projection=False)
-                    self.history.append("evoked.set_eeg_reference({}, projection=False)"
-                                            .format(ref))
+                    self.current["evoked"].set_eeg_reference(
+                        ref, projection=False)
+                    self.history.append(
+                        "evoked.set_eeg_reference({}, projection=False)"
+                        .format(ref))

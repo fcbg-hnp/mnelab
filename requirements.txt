@@ -7,3 +7,4 @@ pandas
 sklearn
 seaborn
 philistine
+h5py

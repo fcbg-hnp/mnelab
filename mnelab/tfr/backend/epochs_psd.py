@@ -93,7 +93,6 @@ class EpochsPSD:
             if montage is not None:
                 # First we create variable head_pos for a correct plotting
                 self.pos = montage.get_pos2d()
-                
                 scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
                 center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
                 self.head_pos = {'scale': scale, 'center': center}
@@ -211,7 +210,7 @@ class EpochsPSD:
                                        [i for i in range(len(locs))])
         # First we create variable head_pos for a correct plotting
         self.pos = montage.get_pos2d()
-        
+
         scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
         center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
         self.head_pos = {'scale': scale, 'center': center}
@@ -545,7 +544,20 @@ class EpochsPSD:
     def save_hdf5(self, path, overwrite=True):
         """Save data as hdf5 file."""
         from mne.externals.h5io import write_hdf5
+
+        if self.method == 'multitaper':
+            params = dict(bandwidth=self.bandwidth,
+                          tmin=self.tmin, tmax=self.tmax,
+                          fmin=self.fmin, fmax=self.fmax)
+        if self.method == 'welch':
+            params = dict(n_fft=self.n_fft,
+                          n_per_seg=self.n_per_seg,
+                          n_overlap=self.n_overlap,
+                          tmin=self.tmin, tmax=self.tmax,
+                          fmin=self.fmin, fmax=self.fmax)
+
         out = dict(freqs=self.freqs, data=self.data,
                    avg_data=mean(self.data, axis=0),
-                   info=self.info, method=self.method)
+                   info=self.info, method=self.method,
+                   parameters=params)
         write_hdf5(path, out, title='mnepython', overwrite=overwrite)
