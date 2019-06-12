@@ -362,7 +362,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
     # PLOT
     x = np.linspace(0,len(S), len(S)) / SFREQ
     ax_source = fig.add_subplot(gs01[0, :])
-    ax_source.plot(x, S, color="r", linewidth=linewidth)
+    ax_source.plot(x, S, color="black", linewidth=linewidth)
     ax_source.set_ylabel("source " + str(picks))
     if x[-1] >= 10:
         ax_source.set_xlim(0, 10)
