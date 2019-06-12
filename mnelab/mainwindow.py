@@ -1,8 +1,9 @@
 import multiprocessing as mp
 from sys import version_info
+from collections import Counter
 
-import mne
 import matplotlib.pyplot as plt
+import mne
 
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -10,16 +11,13 @@ from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
-from mne.io.pick import channel_type
-from mne import pick_types
-from collections import Counter
+
 from .tfr.backend.avg_epochs_tfr import AvgEpochsTFR
 from .tfr.app.avg_epochs_tfr import AvgTFRWindow
 from .tfr.backend.epochs_psd import EpochsPSD
 from .tfr.app.epochs_psd import EpochsPSDWindow
 from .tfr.backend.raw_psd import RawPSD
 from .tfr.app.raw_psd import RawPSDWindow
-
 
 from .utils.error import show_error
 from .dialogs.filterdialog import FilterDialog
@@ -469,7 +467,7 @@ class MainWindow(QMainWindow):
                 if new_label != old_label:
                     renamed[old_label] = new_label
                 new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
-                old_type = channel_type(info, i).lower()
+                old_type = mne.io.pick.channel.channel_type(info, i).lower()
                 if new_type != old_type:
                     types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
@@ -796,8 +794,8 @@ class MainWindow(QMainWindow):
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
             inst_type = "epochs"
-        nchan = len(pick_types(data.info,
-                               meg=True, eeg=True, exclude='bads'))
+        nchan = len(mne.pick_types(data.info,
+                                   meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():

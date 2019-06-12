@@ -9,6 +9,7 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 import matplotlib.pyplot as plt
+
 from .utils.montage import eeg_to_montage
 from .utils.error import show_error
 
