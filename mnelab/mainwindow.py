@@ -221,6 +221,7 @@ class MainWindow(QMainWindow):
         ica_menu = self.menuBar().addMenu("&ICA")
         self.actions["run_ica"] = ica_menu.addAction(
             "Run &ICA...", self.run_ica)
+        ica_menu.addSeparator()
         self.actions["plot_ica_components"] = ica_menu.addAction(
             "Plot ICA &components...",
             self.plot_ica_components_with_timeseries)
@@ -228,10 +229,11 @@ class MainWindow(QMainWindow):
             "Plot &ICA sources...", self.plot_ica_sources)
         self.actions["plot_correlation_matrix"] = ica_menu.addAction(
             "Plot correlation &matrix...", self.plot_correlation_matrix)
-        self.actions["apply_ica"] = ica_menu.addAction(
-            "Apply &ICA...", self.apply_ica)
         self.actions["plot_overlay"] = ica_menu.addAction(
             "Plot overlay...", self.plot_ica_overlay)
+        ica_menu.addSeparator()
+        self.actions["apply_ica"] = ica_menu.addAction(
+            "Apply &ICA...", self.apply_ica)
 
         freq_menu = self.menuBar().addMenu("&Frequencies")
         self.actions["plot_psd"] = freq_menu.addAction(
