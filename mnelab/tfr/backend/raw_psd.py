@@ -453,5 +453,5 @@ class RawPSD:
 
         out = dict(freqs=self.freqs, data=self.data,
                    info=self.info, method=self.method,
-                   parameters=self.params)
+                   parameters=params)
         write_hdf5(path, out, title='mnepython', overwrite=overwrite)
