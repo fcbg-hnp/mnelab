@@ -34,6 +34,7 @@ class AvgEpochsTFR:
         self.cmap = 'jet'
 
         if epochs is not None:
+            print("Here")
             if type == 'eeg':
                 epochs = epochs.copy().pick_types(meg=False, eeg=True)
             elif type == 'mag':
@@ -59,7 +60,6 @@ class AvgEpochsTFR:
             if montage is not None:
                 # First we create variable head_pos for a correct plotting
                 self.pos = montage.get_pos2d()
-                
                 scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
                 center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
                 self.head_pos = {'scale': scale, 'center': center}
@@ -131,6 +131,17 @@ class AvgEpochsTFR:
             self.tfr = None
 
     # ------------------------------------------------------------------------
+    def init(self, epochs=None, freqs=None, n_cycles=None,
+             method='multitaper', time_bandwidth=4., n_fft=512, width=1,
+             picks=None, type='all'):
+        """Init and returns."""
+
+        self.__init__(epochs=epochs, freqs=freqs, n_cycles=n_cycles,
+                      method=method, time_bandwidth=time_bandwidth,
+                      n_fft=n_fft, width=width, picks=picks, type=type)
+        return self
+
+    # ------------------------------------------------------------------------
     def init_from_hdf(self, fname):
         """Init from hdf file."""
         channel_types = mne.io.pick.get_channel_types()
@@ -168,7 +179,7 @@ class AvgEpochsTFR:
                                        [i for i in range(len(locs))])
         # First we create variable head_pos for a correct plotting
         self.pos = montage.get_pos2d()
-        
+
         scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
         center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
         self.head_pos = {'scale': scale, 'center': center}

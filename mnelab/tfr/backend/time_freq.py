@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import (QLineEdit, QLabel, QComboBox)
 from PyQt5.QtCore import Qt
+import multiprocessing as mp
 
 from ..app.error import show_error
+from ...dialogs.calcdialog import CalcDialog
 
 
 # Miscellaneous functions for reading, saving and initializing parameters
@@ -325,12 +327,26 @@ def _init_avg_tfr(self):
         n_cycles = self.params['n_cycles']
     n_fft = self.params.get('n_fft', None)
 
-    self.avgTFR = AvgEpochsTFR(
-        self.data, freqs, n_cycles,
-        method=self.ui.tfrMethodBox.currentText(),
-        time_bandwidth=self.params.get('time_bandwidth', 4),
-        width=self.params.get('width', 1),
-        n_fft=n_fft, type=self.ui.typeBox.currentText())
+    calc = CalcDialog(self, "Calculating Time-Frequency",
+                      "Calculating Time-Frequency.")
+    pool = mp.Pool(1)
+
+    avgTFR = AvgEpochsTFR()
+    args = (self.data, freqs, n_cycles)
+    kwds = dict(method=self.ui.tfrMethodBox.currentText(),
+                time_bandwidth=self.params.get('time_bandwidth', 4),
+                width=self.params.get('width', 1),
+                n_fft=n_fft, type=self.ui.typeBox.currentText())
+
+    res = pool.apply_async(func=avgTFR.init,
+                           args=args,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.avgTFR = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
