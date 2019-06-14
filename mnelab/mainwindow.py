@@ -20,6 +20,7 @@ from .tfr.backend.raw_psd import RawPSD
 from .tfr.app.raw_psd import RawPSDWindow
 
 from .utils.error import show_error
+from .dialogs.calcdialog import CalcDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
