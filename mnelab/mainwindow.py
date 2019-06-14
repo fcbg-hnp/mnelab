@@ -27,7 +27,7 @@ from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
-from .dialogs.calcdialog import CalcDialog
+
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
@@ -647,17 +647,13 @@ class MainWindow(QMainWindow):
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
-            epochs = self.model.current["epochs"]
-            dialog = TimeFreqDialog(None, epochs)
-            dialog.setWindowModality(Qt.WindowModal)
-            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
-            dialog.exec_()
+            data = self.model.current["epochs"]
         elif self.model.current["evoked"]:
-            evoked = self.model.current["evoked"]
-            dialog = TimeFreqDialog(None, evoked)
-            dialog.setWindowModality(Qt.WindowModal)
-            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
-            dialog.exec_()
+            data = self.model.current["evoked"]
+        dialog = TimeFreqDialog(None, data)
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setWindowTitle('TFR of ' + self.model.current["name"])
+        dialog.exec_()
 
         try:
             tfr = dialog.avgTFR.tfr
