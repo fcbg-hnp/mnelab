@@ -9,6 +9,7 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 import matplotlib.pyplot as plt
+
 from .utils.montage import eeg_to_montage
 from .utils.error import show_error
 
@@ -198,13 +199,14 @@ class Model:
                                  shortest_event=shortest_event)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.history.append('events = mne.find_events(self.current["raw"], '
-                                 + "stim_channel={}, ".format(stim_channel)
-                                 + "consecutive={}, ".format(consecutive)
-                                 + "initial_event={}, ".format(initial_event)
-                                 + "uint_cast={}, ".format(uint_cast)
-                                 + "min_duration={}, ".format(min_duration)
-                                 + "shortest_event={})".format(shortest_event))
+            self.history.append(
+                'events = mne.find_events(self.current["raw"], '
+                + "stim_channel={}, ".format(stim_channel)
+                + "consecutive={}, ".format(consecutive)
+                + "initial_event={}, ".format(initial_event)
+                + "uint_cast={}, ".format(uint_cast)
+                + "min_duration={}, ".format(min_duration)
+                + "shortest_event={})".format(shortest_event))
 
     def export_data(self, fname):
         """Export raw to file."""
@@ -619,7 +621,6 @@ class Model:
             self.history.append(("raw.drop_channels({})").format(list(drops)))
         self.current["name"] += " (channels dropped)"
 
-
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
         if self.current["raw"]:
@@ -628,20 +629,25 @@ class Model:
                 self.history.append(('raw.info["bads"]={}').format(bads))
             if names:
                 mne.rename_channels(self.current["raw"].info, names)
-                self.history.append(('rename_channels(raw.info, {}').format(names))
+                self.history.append(
+                    'rename_channels(raw.info, {}'.format(names))
             if types:
                 self.current["raw"].set_channel_types(types)
-                self.history.append(('raw.set_channel_types({}').format(types))
+                self.history.append(
+                    'raw.set_channel_types({}'.format(types))
         else:
             if bads:
                 self.current["epochs"].info["bads"] = bads
-                self.history.append(('epochs.info["bads"]={}').format(bads))
+                self.history.append(
+                    'epochs.info["bads"]={}'.format(bads))
             if names:
                 mne.rename_channels(self.current["epochs"].info, names)
-                self.history.append(('rename_channels(epochs.info, {}').format(names))
+                self.history.append(
+                    'rename_channels(epochs.info, {}'.format(names))
             if types:
                 self.current["epochs"].set_channel_types(types)
-                self.history.append(('epochs.set_channel_types({}').format(types))
+                self.history.append(
+                    'epochs.set_channel_types({}'.format(types))
 
     @data_changed
     def set_montage(self, montage):
@@ -685,11 +691,11 @@ class Model:
         if self.current["raw"]:
             self.current["ica"].apply(self.current["raw"])
             self.history.append("ica.apply(inst=raw, exclude={})"
-                                    .format(self.current["ica"].exclude))
+                                .format(self.current["ica"].exclude))
         if self.current["epochs"]:
             self.current["ica"].apply(self.current["epochs"])
             self.history.append("ica.apply(inst=epochs, exclude={})"
-                                    .format(self.current["ica"].exclude))
+                                .format(self.current["ica"].exclude))
         self.current["isApplied"] = True
         self.current["name"] += "_applied_ica"
 
@@ -713,10 +719,9 @@ class Model:
         durations = np.zeros(events.shape[0])
         desc = np.array([str(e) for e in events[:, 1]])
         annot = Annotations(onsets, durations, desc)
-        self.history.append("annotations = "
-                          + "Annotations({}, {}, {})".format(onsets,
-                                                             durations,
-                                                             desc))
+        self.history.append(
+            "annotations = "
+            + "Annotations({}, {}, {})".format(onsets, durations, desc))
         self.current['raw'].set_annotations(annot)
         self.current["name"] += " (events added)"
         self.history.append("raw.set_annotations(annotations)")

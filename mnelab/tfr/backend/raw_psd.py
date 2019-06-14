@@ -166,6 +166,15 @@ class RawPSD:
             self.cmap = 'jet'
 
     # ------------------------------------------------------------------------
+    def init(self, raw=None, fmin=0, fmax=1500,
+             tmin=None, tmax=None, type='all',
+             method='multitaper', picks=None, **kwargs):
+        self.__init__(raw=raw, fmin=fmin, fmax=fmax,
+                      tmin=tmin, tmax=tmax, type=type,
+                      method=method, picks=picks, **kwargs)
+        return self
+
+    # ------------------------------------------------------------------------
     def init_from_hdf(self, fname):
         """Init the class from an hdf file."""
         channel_types = mne.io.pick.get_channel_types()
