@@ -221,65 +221,85 @@ def _read_tfr_parameters(self):
 
 # ---------------------------------------------------------------------
 def _init_epochs_psd(self):
-    """Initialize the instance of EpochsPSD
-    """
+    """Initialize the instance of EpochsPSD."""
     from .epochs_psd import EpochsPSD
 
     if self.ui.psdMethod.currentText() == 'welch':
         n_fft = self.params['n_fft']
-        self.psd = EpochsPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='welch',
-            n_fft=n_fft,
-            n_per_seg=self.params.get('n_per_seg', n_fft),
-            n_overlap=self.params.get('n_overlap', 0),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(epochs=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='welch',
+                    n_fft=n_fft,
+                    n_per_seg=self.params.get('n_per_seg', n_fft),
+                    n_overlap=self.params.get('n_overlap', 0),
+                    type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
-        self.psd = EpochsPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(epochs=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='multitaper',
+                    bandwidth=self.params.get('bandwidth', 4),
+                    type=self.ui.typeBox.currentText())
+
+    calc = CalcDialog(self, "Calculating PSD",
+                      "Calculating Power Spectrum Density.")
+    pool = mp.Pool(1)
+    psd = EpochsPSD()
+    res = pool.apply_async(func=psd.init,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.psd = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
 def _init_raw_psd(self):
-    """Initialize the instance of RawPSD
-    """
+    """Initialize the instance of RawPSD."""
     from .raw_psd import RawPSD
 
     if self.ui.psdMethod.currentText() == 'welch':
-        self.psd = RawPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='welch',
-            n_fft=self.params.get('n_fft', 2048),
-            n_per_seg=self.params.get('n_per_seg', 2048),
-            n_overlap=self.params.get('n_overlap', 0),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(raw=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='welch',
+                    n_fft=self.params.get('n_fft', 2048),
+                    n_per_seg=self.params.get('n_per_seg', 2048),
+                    n_overlap=self.params.get('n_overlap', 0),
+                    type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
-        self.psd = RawPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(raw=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='multitaper',
+                    bandwidth=self.params.get('bandwidth', 4),
+                    type=self.ui.typeBox.currentText())
+
+    calc = CalcDialog(self, "Calculating PSD",
+                      "Calculating Power Spectrum Density.")
+    pool = mp.Pool(1)
+    psd = RawPSD()
+    res = pool.apply_async(func=psd.init,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.psd = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
