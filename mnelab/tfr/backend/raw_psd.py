@@ -182,16 +182,17 @@ class RawPSD:
         # Start by initializing everything
         f = h5py.File(fname, 'r+')
         dic = f['mnepython']
-        self.data = dic['key_data'][()]
-        if self.data.ndim != 2:
-            raise ValueError('Data of incorrect dimension')
         self.freqs = dic['key_freqs'][()]
         self.method = ''.join([chr(x) for x in dic['key_method'][()]])
         chs = dic['key_info']['key_chs']
+        self.data = np.zeros((
+            len([elem for elem in chs.keys()]),
+            len(self.freqs)))
         names = []
         locs = []
         ch_types = []
-        for key in chs.keys():
+        for i, key in enumerate(chs.keys()):
+            self.data[i, :] = dic['key_data'][key]['idx_1'][()]
             ch = chs[key]
             ch_val = ch['key_kind'][()][0]
             for t, rules in channel_types.items():
@@ -451,7 +452,10 @@ class RawPSD:
                           tmin=self.tmin, tmax=self.tmax,
                           fmin=self.fmin, fmax=self.fmax)
 
-        out = dict(freqs=self.freqs, data=self.data,
+        data = [[self.info['ch_names'][i], self.data[i, :]]
+                for i in range(len(self.info['ch_names']))]
+
+        out = dict(freqs=self.freqs, data=data,
                    info=self.info, method=self.method,
                    parameters=params)
         write_hdf5(path, out, title='mnepython', overwrite=overwrite)
