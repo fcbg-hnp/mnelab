@@ -34,7 +34,6 @@ class AvgEpochsTFR:
         self.cmap = 'jet'
 
         if epochs is not None:
-            print("Here")
             if type == 'eeg':
                 epochs = epochs.copy().pick_types(meg=False, eeg=True)
             elif type == 'mag':
