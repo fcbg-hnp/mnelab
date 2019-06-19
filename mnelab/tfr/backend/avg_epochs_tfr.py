@@ -157,16 +157,20 @@ class AvgEpochsTFR:
 
         # Start by initializing everything
         f = h5py.File(fname, 'r+')
-        dic = f['mnepython']['idx_0']['idx_1']
-        data = dic['key_data'][()]
+        dic = f['mnepython']
         freqs = dic['key_freqs'][()]
         times = dic['key_times'][()]
         method = ''.join([chr(x) for x in dic['key_method'][()]])
         chs = dic['key_info']['key_chs']
+        tfr_data = np.zeros((
+            len([ch for ch in chs.keys()]), len(freqs), len(times)))
+        itc_data = np.copy(tfr_data)
         names = []
         locs = []
         ch_types = []
-        for key in chs.keys():
+        for i, key in enumerate(chs.keys()):
+            tfr_data[i, :, :] = dic['key_data'][key]['key_tfr'][()]
+            itc_data[i, :, :] = dic['key_data'][key]['key_itc'][()]
             ch = chs[key]
             ch_val = ch['key_kind'][()][0]
             for t, rules in channel_types.items():
@@ -234,7 +238,9 @@ class AvgEpochsTFR:
                                     ch_types='eeg')
         # eeg is just a trick to not raise valueError...
         self.tfr = mne.time_frequency.AverageTFR(
-            self.info, data, times, freqs, len(self.picks))
+            self.info, tfr_data, times, freqs, len(self.picks))
+        self.itc = mne.time_frequency.AverageTFR(
+            self.info, itc_data, times, freqs, len(self.picks))
         return self
 
     # ------------------------------------------------------------------------
