@@ -32,6 +32,7 @@ class AvgEpochsTFR:
         to the method.
         """
         self.cmap = 'jet'
+        self.method = method
 
         if epochs is not None:
             if type == 'eeg':
@@ -107,6 +108,8 @@ class AvgEpochsTFR:
 
             if method == 'multitaper':
                 from mne.time_frequency import tfr_multitaper
+                self.params = dict(freqs=freqs, n_cycles=n_cycles,
+                                   time_bandwidth=time_bandwidth)
                 self.tfr, self.itc = tfr_multitaper(
                     epochs, freqs, n_cycles,
                     time_bandwidth=time_bandwidth,
@@ -114,6 +117,7 @@ class AvgEpochsTFR:
 
             if method == 'morlet':
                 from mne.time_frequency import tfr_morlet
+                self.params = dict(freqs=freqs, n_cycles=n_cycles)
                 self.tfr, self.itc = tfr_morlet(
                     epochs, freqs, n_cycles,
                     picks=self.picks, return_itc=True)
@@ -125,12 +129,15 @@ class AvgEpochsTFR:
                 picked_ch_names = [epochs.info['ch_names'][i]
                                    for i in self.picks]
                 picked = epochs.copy().pick_channels(picked_ch_names)
+                self.params = dict(fmin=freqs[0], fmax=freqs[-1], n_fft=n_fft,
+                                   width=width)
                 self.tfr, self.itc = tfr_stockwell(
                     picked, fmin=freqs[0], fmax=freqs[-1],
                     n_fft=n_fft, width=width, return_itc=True)
         else:
             # Only for initializing an empty class...
             self.tfr = None
+            self.itc = None
 
     # ------------------------------------------------------------------------
     def init(self, epochs=None, freqs=None, n_cycles=None,
@@ -284,3 +291,21 @@ class AvgEpochsTFR:
                   .5,                len(self.picks)+.5]
         return ax.imshow(data, extent=extent, aspect='auto',
                          origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+
+    # ------------------------------------------------------------------------
+    def save_hdf5(self, path, overwrite=True):
+        """Save data as hdf5 file."""
+        from mne.externals.h5io import write_hdf5
+
+        data = [{self.info['ch_names'][i]: self.info['ch_names'][i],
+                 'tfr': self.tfr.data[i, :, :],
+                 'itc': self.itc.data[i, :, :]}
+                for i in range(len(self.info['ch_names']))]
+
+        out = dict(freqs=self.tfr.freqs,
+                   times=self.tfr.times,
+                   data=data,
+                   info=self.info,
+                   method=self.method,
+                   parameters=self.params)
+        write_hdf5(path, out, title='mnepython', overwrite=overwrite)

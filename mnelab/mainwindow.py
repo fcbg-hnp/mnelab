@@ -659,7 +659,7 @@ class MainWindow(QMainWindow):
         dialog.exec_()
 
         try:
-            tfr = dialog.avgTFR.tfr
+            tfr = dialog.avgTFR
             self.data_changed()
         except Exception as e:
             tfr = None

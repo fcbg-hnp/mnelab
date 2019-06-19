@@ -350,7 +350,7 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".hdf"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        self.current["tfr"].save(fname)
+        self.current["tfr"].save_hdf5(fname)
 
     @data_changed
     def import_bads(self, fname):

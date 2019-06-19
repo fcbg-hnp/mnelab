@@ -37,8 +37,7 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_canvas(self):
-        """setup canvas for matplotlib
-        """
+        """setup canvas for matplotlib."""
         self.ui.figure = plt.figure(figsize=(10, 10))
         self.ui.figure.patch.set_facecolor('None')
         self.ui.canvas = FigureCanvas(self.ui.figure)
@@ -50,8 +49,7 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_box(self):
-        """Setup box names
-        """
+        """Setup box names."""
         self.ui.displayBox.addItem('Time-Frequency plot')
         self.ui.displayBox.addItem('Channel-Frequency plot')
         self.ui.displayBox.addItem('Channel-Time plot')
@@ -62,8 +60,7 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_slider(self):
-        """Setup the main slider
-        """
+        """Setup the main slider."""
         self.index = self.ui.mainSlider.value()
         self.ui.mainSlider.setMinimum(0)
         self.ui.fSlider.setMaximum(len(self.avg.tfr.freqs) - 2)
@@ -78,8 +75,7 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_bindings(self):
-        """Set the bindings
-        """
+        """Set the bindings."""
         self.ui.vmin.editingFinished.connect(self.value_changed)
         self.ui.vmax.editingFinished.connect(self.value_changed)
         self.ui.tmin.editingFinished.connect(self.value_changed)
@@ -96,8 +92,7 @@ class AvgTFRWindow(QDialog):
     # Updating functions
     # =====================================================================
     def value_changed(self):
-        """Gets called when scaling is changed
-        """
+        """Gets called when scaling is changed."""
         self.index = self.ui.mainSlider.value()
         if self.plotType == 'Time-Frequency plot':
             self.ui.channelName.setText(
@@ -157,8 +152,7 @@ class AvgTFRWindow(QDialog):
     # ---------------------------------------------------------------------
     def slider_freq_changed(self):
         """Change the values of frequency and time for topomap when
-        the slider is moved
-        """
+        the slider is moved."""
         freq_index = self.ui.fSlider.value()
         fmin, fmax = (self.avg.tfr.freqs[freq_index],
                       self.avg.tfr.freqs[freq_index])
@@ -169,8 +163,7 @@ class AvgTFRWindow(QDialog):
     # ---------------------------------------------------------------------
     def slider_time_changed(self):
         """Change the values of time and time for topomap when
-        the slider is moved.
-        """
+        the slider is moved."""
         time_index = self.ui.tSlider.value()
         tmin, tmax = (self.avg.tfr.times[time_index],
                       self.avg.tfr.times[time_index])
