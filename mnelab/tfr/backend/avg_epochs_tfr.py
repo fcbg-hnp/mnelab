@@ -107,14 +107,16 @@ class AvgEpochsTFR:
 
             if method == 'multitaper':
                 from mne.time_frequency import tfr_multitaper
-                self.tfr = tfr_multitaper(epochs, freqs, n_cycles,
-                                          time_bandwidth=time_bandwidth,
-                                          picks=self.picks, return_itc=False)
+                self.tfr, self.itc = tfr_multitaper(
+                    epochs, freqs, n_cycles,
+                    time_bandwidth=time_bandwidth,
+                    picks=self.picks, return_itc=True)
 
             if method == 'morlet':
                 from mne.time_frequency import tfr_morlet
-                self.tfr = tfr_morlet(epochs, freqs, n_cycles,
-                                      picks=self.picks, return_itc=False)
+                self.tfr, self.itc = tfr_morlet(
+                    epochs, freqs, n_cycles,
+                    picks=self.picks, return_itc=True)
 
             if method == 'stockwell':
                 from mne.time_frequency import tfr_stockwell
@@ -123,8 +125,9 @@ class AvgEpochsTFR:
                 picked_ch_names = [epochs.info['ch_names'][i]
                                    for i in self.picks]
                 picked = epochs.copy().pick_channels(picked_ch_names)
-                self.tfr = tfr_stockwell(picked, fmin=freqs[0], fmax=freqs[-1],
-                                         n_fft=n_fft, width=width)
+                self.tfr, self.itc = tfr_stockwell(
+                    picked, fmin=freqs[0], fmax=freqs[-1],
+                    n_fft=n_fft, width=width, return_itc=True)
         else:
             # Only for initializing an empty class...
             self.tfr = None
@@ -238,6 +241,20 @@ class AvgEpochsTFR:
             data = 10 * log(data / mean(data))
         extent = [self.tfr.times[0], self.tfr.times[-1],
                   self.tfr.freqs[0], self.tfr.freqs[-1]]
+        return ax.imshow(data, extent=extent, aspect='auto',
+                         origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+
+    # ------------------------------------------------------------------------
+    def plot_itc(self, index_channel, ax,
+                 vmin=None, vmax=None, log_display=False):
+        """
+        Plot the averaged epochs itc plot for a given channel.
+        """
+        data = self.itc.data[index_channel, :, :]
+        if log_display:
+            data = 10 * log(data / mean(data))
+        extent = [self.itc.times[0], self.itc.times[-1],
+                  self.itc.freqs[0], self.itc.freqs[-1]]
         return ax.imshow(data, extent=extent, aspect='auto',
                          origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
 
