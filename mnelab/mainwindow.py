@@ -21,7 +21,7 @@ from .tfr.app.raw_psd import RawPSDWindow
 
 from .utils.error import show_error
 from .dialogs.calcdialog import CalcDialog
-from .dialogs.filterdialog import FilterDialog
+from .dialogs.dev_filter import FirFilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
 from .dialogs.referencedialog import ReferenceDialog
@@ -869,7 +869,7 @@ class MainWindow(QMainWindow):
             israw = True
         else:
             israw = False
-        dialog = FilterDialog(self, israw)
+        dialog = FirFilterDialog(self, self.model.current['raw'])
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
                 self.auto_duplicate()
