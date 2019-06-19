@@ -470,9 +470,7 @@ class MainWindow(QMainWindow):
                 if new_label != old_label:
                     renamed[old_label] = new_label
                 new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
-                old_type = mne.io.pick.channel.channel_type(info, i).lower()
-                if new_type != old_type:
-                    types[new_label] = new_type
+                types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             self.model.set_channel_properties(bads, renamed, types)
