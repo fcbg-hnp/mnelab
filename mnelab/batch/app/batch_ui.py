@@ -123,5 +123,5 @@ class Ui_BatchDialog(object):
         self.tfrParams.setText(_translate("Dialog", "Select Parameters"))
         self.psdBox.setText(_translate("Dialog", "Compute Power-Spectrum Density"))
         self.psdParams.setText(_translate("Dialog", "Select Parameters"))
-        self.pushButton.setText(_translate("Dialog", "Choose saving folder..."))
+        self.pushButton.setText(_translate("Dialog", "Choose saving file"))
         self.startBatch.setText(_translate("Dialog", "Start batch processing..."))
