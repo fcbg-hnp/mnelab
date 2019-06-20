@@ -1,9 +1,8 @@
 import multiprocessing as mp
 from sys import version_info
-from collections import Counter
 
-import matplotlib.pyplot as plt
 import mne
+import matplotlib.pyplot as plt
 
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -11,7 +10,9 @@ from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
-
+from mne.io.pick import channel_type
+from mne import pick_types
+from collections import Counter
 from .tfr.backend.avg_epochs_tfr import AvgEpochsTFR
 from .tfr.app.avg_epochs_tfr import AvgTFRWindow
 from .tfr.backend.epochs_psd import EpochsPSD
@@ -19,8 +20,8 @@ from .tfr.app.epochs_psd import EpochsPSDWindow
 from .tfr.backend.raw_psd import RawPSD
 from .tfr.app.raw_psd import RawPSDWindow
 
+
 from .utils.error import show_error
-from .dialogs.calcdialog import CalcDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -28,7 +29,7 @@ from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
-
+from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
@@ -470,7 +471,9 @@ class MainWindow(QMainWindow):
                 if new_label != old_label:
                     renamed[old_label] = new_label
                 new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
-                types[new_label] = new_type
+                old_type = channel_type(info, i).lower()
+                if new_type != old_type:
+                    types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             self.model.set_channel_properties(bads, renamed, types)
@@ -648,16 +651,20 @@ class MainWindow(QMainWindow):
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
-            data = self.model.current["epochs"]
+            epochs = self.model.current["epochs"]
+            dialog = TimeFreqDialog(None, epochs)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
+            dialog.exec_()
         elif self.model.current["evoked"]:
-            data = self.model.current["evoked"]
-        dialog = TimeFreqDialog(None, data)
-        dialog.setWindowModality(Qt.WindowModal)
-        dialog.setWindowTitle('TFR of ' + self.model.current["name"])
-        dialog.exec_()
+            evoked = self.model.current["evoked"]
+            dialog = TimeFreqDialog(None, evoked)
+            dialog.setWindowModality(Qt.WindowModal)
+            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
+            dialog.exec_()
 
         try:
-            tfr = dialog.avgTFR
+            tfr = dialog.avgTFR.tfr
             self.data_changed()
         except Exception as e:
             tfr = None
@@ -791,8 +798,8 @@ class MainWindow(QMainWindow):
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
             inst_type = "epochs"
-        nchan = len(mne.pick_types(data.info,
-                                   meg=True, eeg=True, exclude='bads'))
+        nchan = len(pick_types(data.info,
+                               meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():

@@ -315,7 +315,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
     DATA_proc = ica.apply(inst.copy(),exclude=[picks]).get_data()
 
     print(type(inst))
-    if type(inst) in [mne.io.fiff.raw.Raw, mne.io.brainvision.brainvision.RawBrainVision]:
+    if type(inst) == mne.io.fiff.raw.Raw:
         S = ica.get_sources(inst=inst).get_data()[picks]
 
     elif type(inst) == mne.epochs.EpochsFIF:

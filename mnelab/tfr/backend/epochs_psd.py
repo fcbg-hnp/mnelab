@@ -172,15 +172,6 @@ class EpochsPSD:
             self.cmap = 'jet'
 
     # ------------------------------------------------------------------------
-    def init(self, epochs=None, fmin=0, fmax=1500,
-             tmin=None, tmax=None, type='all',
-             method='multitaper', picks=None, **kwargs):
-        self.__init__(epochs=epochs, fmin=fmin, fmax=fmax,
-                      tmin=tmin, tmax=tmax, type=type,
-                      method=method, picks=picks, **kwargs)
-        return self
-
-    # ------------------------------------------------------------------------
     def init_from_hdf(self, fname):
         """Init the class from an hdf file."""
         channel_types = mne.io.pick.get_channel_types()
@@ -188,19 +179,16 @@ class EpochsPSD:
         # Start by initializing everything
         f = h5py.File(fname, 'r+')
         dic = f['mnepython']
+        self.data = dic['key_data'][()]
+        if self.data.ndim != 3:
+            raise ValueError('Data of incorrect dimension')
         self.freqs = dic['key_freqs'][()]
-        chs = dic['key_info']['key_chs']
-        n_epochs, n_freqs = dic['key_data']['idx_0']['idx_1'][()].shape
-        self.data = np.zeros((
-            n_epochs,
-            len([elem for elem in chs.keys()]),
-            n_freqs))
         self.method = ''.join([chr(x) for x in dic['key_method'][()]])
+        chs = dic['key_info']['key_chs']
         names = []
         locs = []
         ch_types = []
-        for i, key in enumerate(chs.keys()):
-            self.data[:, i, :] = dic['key_data'][key]['idx_1'][()]
+        for key in chs.keys():
             ch = chs[key]
             ch_val = ch['key_kind'][()][0]
             for t, rules in channel_types.items():
@@ -568,11 +556,7 @@ class EpochsPSD:
                           tmin=self.tmin, tmax=self.tmax,
                           fmin=self.fmin, fmax=self.fmax)
 
-        print(self.info['ch_names'])
-        data = [[self.info['ch_names'][i], self.data[:, i, :]]
-                for i in range(len(self.info['ch_names']))]
-
-        out = dict(freqs=self.freqs, data=data,
+        out = dict(freqs=self.freqs, data=self.data,
                    avg_data=mean(self.data, axis=0),
                    info=self.info, method=self.method,
                    parameters=params)

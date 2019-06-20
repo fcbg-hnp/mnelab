@@ -37,7 +37,8 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_canvas(self):
-        """setup canvas for matplotlib."""
+        """setup canvas for matplotlib
+        """
         self.ui.figure = plt.figure(figsize=(10, 10))
         self.ui.figure.patch.set_facecolor('None')
         self.ui.canvas = FigureCanvas(self.ui.figure)
@@ -49,18 +50,19 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_box(self):
-        """Setup box names."""
+        """Setup box names
+        """
         self.ui.displayBox.addItem('Time-Frequency plot')
         self.ui.displayBox.addItem('Channel-Frequency plot')
         self.ui.displayBox.addItem('Channel-Time plot')
         if self.avg.with_coord != []:  # Add topomap if there are coordinates
             self.ui.displayBox.addItem('Topomap plot')
-        self.ui.displayBox.addItem('Inter-trial Coherence plot')
         self.plotType = 'Time-Frequency plot'
 
     # ---------------------------------------------------------------------
     def set_slider(self):
-        """Setup the main slider."""
+        """Setup the main slider
+        """
         self.index = self.ui.mainSlider.value()
         self.ui.mainSlider.setMinimum(0)
         self.ui.fSlider.setMaximum(len(self.avg.tfr.freqs) - 2)
@@ -75,7 +77,8 @@ class AvgTFRWindow(QDialog):
 
     # ---------------------------------------------------------------------
     def set_bindings(self):
-        """Set the bindings."""
+        """Set the bindings
+        """
         self.ui.vmin.editingFinished.connect(self.value_changed)
         self.ui.vmax.editingFinished.connect(self.value_changed)
         self.ui.tmin.editingFinished.connect(self.value_changed)
@@ -92,7 +95,8 @@ class AvgTFRWindow(QDialog):
     # Updating functions
     # =====================================================================
     def value_changed(self):
-        """Gets called when scaling is changed."""
+        """Gets called when scaling is changed
+        """
         self.index = self.ui.mainSlider.value()
         if self.plotType == 'Time-Frequency plot':
             self.ui.channelName.setText(
@@ -139,8 +143,7 @@ class AvgTFRWindow(QDialog):
 
     def name_changed(self):
         """Get called when name is changed."""
-        if (self.plotType == 'Time-Frequency plot'
-                or self.plotType == 'Inter-trial Coherence plot'):
+        if self.plotType == 'Time-Frequency plot':
             try:
                 name = self.ui.channelName.text()
                 names = [self.avg.info['ch_names'][i] for i in self.avg.picks]
@@ -152,7 +155,8 @@ class AvgTFRWindow(QDialog):
     # ---------------------------------------------------------------------
     def slider_freq_changed(self):
         """Change the values of frequency and time for topomap when
-        the slider is moved."""
+        the slider is moved
+        """
         freq_index = self.ui.fSlider.value()
         fmin, fmax = (self.avg.tfr.freqs[freq_index],
                       self.avg.tfr.freqs[freq_index])
@@ -163,7 +167,8 @@ class AvgTFRWindow(QDialog):
     # ---------------------------------------------------------------------
     def slider_time_changed(self):
         """Change the values of time and time for topomap when
-        the slider is moved."""
+        the slider is moved.
+        """
         time_index = self.ui.tSlider.value()
         tmin, tmax = (self.avg.tfr.times[time_index],
                       self.avg.tfr.times[time_index])
@@ -176,7 +181,6 @@ class AvgTFRWindow(QDialog):
         """Update the widgets."""
         self.plotType = self.ui.displayBox.currentText()
         self.ui.mainSlider.setValue(0)
-
         if self.plotType == 'Time-Frequency plot':
             self.ui.channelName.show()
             self.ui.channelName.setText(
@@ -185,53 +189,38 @@ class AvgTFRWindow(QDialog):
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
-
-        elif self.plotType == 'Channel-Frequency plot':
+        if self.plotType == 'Channel-Frequency plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[2] - 1)
             self.ui.mainLabel.setText('Times')
-
-        elif self.plotType == 'Channel-Time plot':
+        if self.plotType == 'Channel-Time plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[1] - 1)
             self.ui.mainLabel.setText('Frequencies')
-
-        elif self.plotType == 'Topomap plot':
+        if self.plotType == 'Topomap plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(True)
             self.ui.mainSlider.setEnabled(False)
-
-        elif self.plotType == 'Inter-trial Coherence plot':
-            self.ui.channelName.show()
-            self.ui.channelName.setText(
-                self.avg.info['ch_names'][self.avg.picks[self.index]])
-            self.ui.topoFrame.setEnabled(False)
-            self.ui.mainSlider.setEnabled(True)
-            self.ui.mainSlider.setMaximum(self.avg.itc.data.shape[0] - 1)
-            self.ui.mainLabel.setText('Channels')
-
         self.ui.mainSlider.setTickInterval(1)
         self.value_changed()
 
     # Plotting functions
     # =====================================================================
     def plot(self):
-        """Plot the correct representation."""
+        """Plot the correct representation
+        """
         from ..backend.viz_tfr import \
-            (_plot_time_freq, _plot_freq_ch, _plot_time_ch,
-             _plot_topomap_tfr, _plot_itc)
+            _plot_time_freq, _plot_freq_ch, _plot_time_ch, _plot_topomap_tfr
 
         if self.plotType == 'Time-Frequency plot':
             _plot_time_freq(self)
-        elif self.plotType == 'Channel-Frequency plot':
+        if self.plotType == 'Channel-Frequency plot':
             _plot_freq_ch(self)
-        elif self.plotType == 'Channel-Time plot':
+        if self.plotType == 'Channel-Time plot':
             _plot_time_ch(self)
-        elif self.plotType == 'Topomap plot':
+        if self.plotType == 'Topomap plot':
             _plot_topomap_tfr(self)
-        elif self.plotType == 'Inter-trial Coherence plot':
-            _plot_itc(self)
