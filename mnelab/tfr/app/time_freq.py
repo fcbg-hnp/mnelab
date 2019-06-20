@@ -3,6 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from collections import Counter
 import mne
+import multiprocessing as mp
 
 from .ui.time_freq_UI import Ui_TimeFreq
 

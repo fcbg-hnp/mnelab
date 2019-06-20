@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import (QLineEdit, QLabel, QComboBox)
 from PyQt5.QtCore import Qt
+import multiprocessing as mp
 
 from ..app.error import show_error
+from ...dialogs.calcdialog import CalcDialog
 
 
 # Miscellaneous functions for reading, saving and initializing parameters
@@ -191,7 +193,7 @@ def _read_tfr_parameters(self):
         self.params['fmin'] = float(self.fmin.text())
         self.params['fmax'] = float(self.fmax.text())
         if self.ui.tfrMethodBox.currentText() == 'multitaper':
-            self.params['fstep'] = float(self.fstep.text())
+            self.params['freq_step'] = float(self.fstep.text())
             if self.tfr_param.currentText == 'Time Window (s)':
                 self.params['time_window'] = float(self.cycles.text())
                 self.params['n_cycles'] = None
@@ -200,7 +202,7 @@ def _read_tfr_parameters(self):
                 self.params['time_window'] = None
             self.params['time_bandwidth'] = float(self.time_bandwidth.text())
         if self.ui.tfrMethodBox.currentText() == 'morlet':
-            self.params['fstep'] = float(self.fstep.text())
+            self.params['freq_step'] = float(self.fstep.text())
             if self.tfr_param.currentText == 'Time Window (s)':
                 self.params['time_window'] = float(self.cycles.text())
                 self.params['n_cycles'] = None
@@ -219,65 +221,85 @@ def _read_tfr_parameters(self):
 
 # ---------------------------------------------------------------------
 def _init_epochs_psd(self):
-    """Initialize the instance of EpochsPSD
-    """
+    """Initialize the instance of EpochsPSD."""
     from .epochs_psd import EpochsPSD
 
     if self.ui.psdMethod.currentText() == 'welch':
         n_fft = self.params['n_fft']
-        self.psd = EpochsPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='welch',
-            n_fft=n_fft,
-            n_per_seg=self.params.get('n_per_seg', n_fft),
-            n_overlap=self.params.get('n_overlap', 0),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(epochs=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='welch',
+                    n_fft=n_fft,
+                    n_per_seg=self.params.get('n_per_seg', n_fft),
+                    n_overlap=self.params.get('n_overlap', 0),
+                    type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
-        self.psd = EpochsPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(epochs=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='multitaper',
+                    bandwidth=self.params.get('bandwidth', 4),
+                    type=self.ui.typeBox.currentText())
+
+    calc = CalcDialog(self, "Calculating PSD",
+                      "Calculating Power Spectrum Density.")
+    pool = mp.Pool(1)
+    psd = EpochsPSD()
+    res = pool.apply_async(func=psd.init,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.psd = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
 def _init_raw_psd(self):
-    """Initialize the instance of RawPSD
-    """
+    """Initialize the instance of RawPSD."""
     from .raw_psd import RawPSD
 
     if self.ui.psdMethod.currentText() == 'welch':
-        self.psd = RawPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='welch',
-            n_fft=self.params.get('n_fft', 2048),
-            n_per_seg=self.params.get('n_per_seg', 2048),
-            n_overlap=self.params.get('n_overlap', 0),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(raw=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='welch',
+                    n_fft=self.params.get('n_fft', 2048),
+                    n_per_seg=self.params.get('n_per_seg', 2048),
+                    n_overlap=self.params.get('n_overlap', 0),
+                    type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
-        self.psd = RawPSD(
-            self.data,
-            fmin=self.params['fmin'],
-            fmax=self.params['fmax'],
-            tmin=self.params['tmin'],
-            tmax=self.params['tmax'],
-            method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4),
-            type=self.ui.typeBox.currentText())
+        kwds = dict(raw=self.data,
+                    fmin=self.params['fmin'],
+                    fmax=self.params['fmax'],
+                    tmin=self.params['tmin'],
+                    tmax=self.params['tmax'],
+                    method='multitaper',
+                    bandwidth=self.params.get('bandwidth', 4),
+                    type=self.ui.typeBox.currentText())
+
+    calc = CalcDialog(self, "Calculating PSD",
+                      "Calculating Power Spectrum Density.")
+    pool = mp.Pool(1)
+    psd = RawPSD()
+    res = pool.apply_async(func=psd.init,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.psd = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
@@ -325,12 +347,26 @@ def _init_avg_tfr(self):
         n_cycles = self.params['n_cycles']
     n_fft = self.params.get('n_fft', None)
 
-    self.avgTFR = AvgEpochsTFR(
-        self.data, freqs, n_cycles,
-        method=self.ui.tfrMethodBox.currentText(),
-        time_bandwidth=self.params.get('time_bandwidth', 4),
-        width=self.params.get('width', 1),
-        n_fft=n_fft, type=self.ui.typeBox.currentText())
+    calc = CalcDialog(self, "Calculating Time-Frequency",
+                      "Calculating Time-Frequency.")
+    pool = mp.Pool(1)
+
+    avgTFR = AvgEpochsTFR()
+    args = (self.data, freqs, n_cycles)
+    kwds = dict(method=self.ui.tfrMethodBox.currentText(),
+                time_bandwidth=self.params.get('time_bandwidth', 4),
+                width=self.params.get('width', 1),
+                n_fft=n_fft, type=self.ui.typeBox.currentText())
+
+    res = pool.apply_async(func=avgTFR.init,
+                           args=args,
+                           kwds=kwds,
+                           callback=lambda x: calc.accept())
+
+    if not calc.exec_():
+        pool.terminate()
+
+    self.avgTFR = res.get(timeout=1)
 
 
 # ---------------------------------------------------------------------
