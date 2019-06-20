@@ -94,7 +94,8 @@ class AvgTFRWindow(QDialog):
     def value_changed(self):
         """Gets called when scaling is changed."""
         self.index = self.ui.mainSlider.value()
-        if self.plotType == 'Time-Frequency plot':
+        if (self.plotType == 'Time-Frequency plot'
+                or self.plotType == 'Inter-trial Coherence plot'):
             self.ui.channelName.setText(
                 self.avg.info['ch_names'][self.avg.picks[self.index]])
             self.log = self.ui.log.checkState()

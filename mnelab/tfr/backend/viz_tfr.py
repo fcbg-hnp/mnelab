@@ -123,6 +123,7 @@ def _plot_topomap_tfr(self):
         print("Error with the parameters")
 
 
+# ---------------------------------------------------------------------
 def _find_values(array, min, max):
     """Helper function that return two extremum values, to be sure that
     at least one value in array exist between returned values.
