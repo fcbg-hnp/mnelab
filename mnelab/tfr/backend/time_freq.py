@@ -193,7 +193,7 @@ def _read_tfr_parameters(self):
         self.params['fmin'] = float(self.fmin.text())
         self.params['fmax'] = float(self.fmax.text())
         if self.ui.tfrMethodBox.currentText() == 'multitaper':
-            self.params['fstep'] = float(self.fstep.text())
+            self.params['freq_step'] = float(self.fstep.text())
             if self.tfr_param.currentText == 'Time Window (s)':
                 self.params['time_window'] = float(self.cycles.text())
                 self.params['n_cycles'] = None
@@ -202,7 +202,7 @@ def _read_tfr_parameters(self):
                 self.params['time_window'] = None
             self.params['time_bandwidth'] = float(self.time_bandwidth.text())
         if self.ui.tfrMethodBox.currentText() == 'morlet':
-            self.params['fstep'] = float(self.fstep.text())
+            self.params['freq_step'] = float(self.fstep.text())
             if self.tfr_param.currentText == 'Time Window (s)':
                 self.params['time_window'] = float(self.cycles.text())
                 self.params['n_cycles'] = None
