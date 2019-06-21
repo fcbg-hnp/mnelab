@@ -307,6 +307,9 @@ def plot_properties_with_timeseries(inst, ica, picks):
     T = 1. / SFREQ
 
     #ICA
+    ica = ica.copy()
+    print(picks)
+    ica.exclude = [picks]
     components = ica.get_components()
 
     #DATA
