@@ -187,25 +187,21 @@ def plot_overlay(ica, inst):
         fig.canvas.flush_events()
 
     def scroll_time(event):
-        try:
-            ''' scroll time when using keyboard arroys'''
-            current_lim = AXES[0].get_xlim()
-            pad = abs((current_lim[1] - current_lim[0])/4.)
-            if event.key =='right':
-                new_lim = tuple(x + pad for x in current_lim)
-                if new_lim[-1] >= x[-1]:
-                    new_lim = tuple(x[-1] - pad , x[-1])
-                AXES[0].set_xlim(new_lim)
-            elif event.key =='left':
-                new_lim = tuple(x - pad for x in current_lim)
-                if new_lim[0] <= x[0]:
-                    new_lim = tuple(x[0], x[0] - pad)
-                AXES[0].set_xlim(new_lim)
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-        except Exception as e:
-            print(e)
-            pass
+        ''' scroll time when using keyboard arroys'''
+        current_lim = AXES[0].get_xlim()
+        pad = abs((current_lim[1] - current_lim[0])/4.)
+        if event.key =='right':
+            new_lim = tuple(l + pad for l in current_lim)
+            if new_lim[-1] >= x[-1] + pad:
+                new_lim = current_lim
+        elif event.key =='left':
+            new_lim = tuple(l - pad for l in current_lim)
+            if new_lim[0] <= x[0]-pad:
+                new_lim = current_lim
+        AXES[0].set_xlim(new_lim)
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
     # Disconnect defaults events
     try:
         matplotlib.rcParams['keymap.back'].remove('left')
@@ -304,7 +300,6 @@ def plot_properties_with_timeseries(inst, ica, picks):
     CH_NAMES = [ch for ch in inst.info["ch_names"] if ch not in inst.info["bads"]]
     N_CHANNELS = len(CH_NAMES)
     SFREQ = inst.info["sfreq"]
-    TIMES = inst.times
     T = 1. / SFREQ
 
     #ICA
@@ -465,12 +460,12 @@ def plot_properties_with_timeseries(inst, ica, picks):
         current_lim = ax_source.get_xlim()
         pad = abs((current_lim[1] - current_lim[0])/4.)
         if event.key =='right':
-            new_lim = tuple(x + pad for x in current_lim)
-            if new_lim[-1] >= TIMES[-1] + pad:
+            new_lim = tuple(l + pad for l in current_lim)
+            if new_lim[-1] >= x[-1] + pad:
                 new_lim = current_lim
         elif event.key =='left':
-            new_lim = tuple(x - pad for x in current_lim)
-            if new_lim[0] <=TIMES[0] - pad:
+            new_lim = tuple(l - pad for l in current_lim)
+            if new_lim[0] <=x[0]-pad:
                 new_lim = current_lim
         ax_source.set_xlim(new_lim)
         fig.canvas.draw()
