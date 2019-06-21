@@ -29,8 +29,9 @@ def read_sef(path):
     #   Read variable part of the header
     ch_names = []
     for k in range(n_channels):
-        name = f.read(8).decode('latin-1')
-        ch_names.append(re.sub('[^0-9a-zA-Z]+', '', name))
+        name = [char for char in f.read(8).split(b'\x00')
+                if char != b''][0]
+        ch_names.append(name.decode('utf-8'))
 
     # Read data
     buffer = np.frombuffer(
