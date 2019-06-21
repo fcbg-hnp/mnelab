@@ -137,7 +137,7 @@ class MainWindow(QMainWindow):
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels",
-                                     "*.csv *.mrk *.txt"))
+                                     "*.csv *.txt"))
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
             lambda: self.import_file(model.import_events, "Import events",
