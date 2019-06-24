@@ -11,18 +11,10 @@ import mne
 import matplotlib.pyplot as plt
 from .utils.montage import eeg_to_montage
 from .utils.error import show_error
-
+from .philistine.io import write_raw_brainvision
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
-SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
-
-try:
-    import philistine
-except ImportError:
-    have_philistine = False
-else:
-    have_philistine = True
-    SUPPORTED_EXPORT_FORMATS += "*.vhdr"
+SUPPORTED_EXPORT_FORMATS = "*.fif *.set *.vhdr"
 
 
 try:
@@ -223,10 +215,10 @@ class Model:
                     self.export_bads(join(split(fname)[0], name + "_bads.csv"))
                     raw_to_save = self.current["raw"].copy()
                     raw_to_save.info["bads"] = []
-                    philistine.mne.write_raw_brainvision(
+                    write_raw_brainvision(
                         raw_to_save, fname)
                 else:
-                    philistine.mne.write_raw_brainvision(
+                    write_raw_brainvision(
                         self.current["raw"], fname)
         elif self.current["epochs"]:
             if ext == ".fif":
