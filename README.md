@@ -44,8 +44,8 @@ A package on [PyPI](https://pypi.python.org/pypi) will be available soon. Meanwh
 
 
 ### License
-MNELAB is under the BSD 3-clause license (Copyright (c) 2017, Clemens Brunner)
-Philistine subfolder is under the BSD 3-clause license (Copyright (c) 2017--2018, Phillip Alday)
-Modifications of original works are under the BSD 3-clause license (Copyright (c) 2019, Victor Férat, Tanguy Vivier)
+- MNELAB is under the BSD 3-clause license (Copyright (c) 2017, Clemens Brunner)
+- Philistine subfolder is under the BSD 3-clause license (Copyright (c) 2017--2018, Phillip Alday)
+- Modifications of original works are under the BSD 3-clause license (Copyright (c) 2019, Victor Férat, Tanguy Vivier)
 
 
