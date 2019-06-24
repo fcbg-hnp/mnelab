@@ -23,7 +23,6 @@ Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation via FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
-- [philistine](https://pypi.org/project/philistine/#description) (export raw to VHDR)
 
 In general, it is recommended to always use the latest package versions.
 
