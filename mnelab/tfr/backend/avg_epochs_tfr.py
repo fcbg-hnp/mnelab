@@ -32,6 +32,7 @@ class AvgEpochsTFR:
         to the method.
         """
         self.cmap = 'jet'
+        self.method = method
 
         if epochs is not None:
             if type == 'eeg':
@@ -59,7 +60,6 @@ class AvgEpochsTFR:
             if montage is not None:
                 # First we create variable head_pos for a correct plotting
                 self.pos = montage.get_pos2d()
-                
                 scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
                 center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
                 self.head_pos = {'scale': scale, 'center': center}
@@ -108,14 +108,19 @@ class AvgEpochsTFR:
 
             if method == 'multitaper':
                 from mne.time_frequency import tfr_multitaper
-                self.tfr = tfr_multitaper(epochs, freqs, n_cycles,
-                                          time_bandwidth=time_bandwidth,
-                                          picks=self.picks, return_itc=False)
+                self.params = dict(freqs=freqs, n_cycles=n_cycles,
+                                   time_bandwidth=time_bandwidth)
+                self.tfr, self.itc = tfr_multitaper(
+                    epochs, freqs, n_cycles,
+                    time_bandwidth=time_bandwidth,
+                    picks=self.picks, return_itc=True)
 
             if method == 'morlet':
                 from mne.time_frequency import tfr_morlet
-                self.tfr = tfr_morlet(epochs, freqs, n_cycles,
-                                      picks=self.picks, return_itc=False)
+                self.params = dict(freqs=freqs, n_cycles=n_cycles)
+                self.tfr, self.itc = tfr_morlet(
+                    epochs, freqs, n_cycles,
+                    picks=self.picks, return_itc=True)
 
             if method == 'stockwell':
                 from mne.time_frequency import tfr_stockwell
@@ -124,11 +129,26 @@ class AvgEpochsTFR:
                 picked_ch_names = [epochs.info['ch_names'][i]
                                    for i in self.picks]
                 picked = epochs.copy().pick_channels(picked_ch_names)
-                self.tfr = tfr_stockwell(picked, fmin=freqs[0], fmax=freqs[-1],
-                                         n_fft=n_fft, width=width)
+                self.params = dict(fmin=freqs[0], fmax=freqs[-1], n_fft=n_fft,
+                                   width=width)
+                self.tfr, self.itc = tfr_stockwell(
+                    picked, fmin=freqs[0], fmax=freqs[-1],
+                    n_fft=n_fft, width=width, return_itc=True)
         else:
             # Only for initializing an empty class...
             self.tfr = None
+            self.itc = None
+
+    # ------------------------------------------------------------------------
+    def init(self, epochs=None, freqs=None, n_cycles=None,
+             method='multitaper', time_bandwidth=4., n_fft=512, width=1,
+             picks=None, type='all'):
+        """Init and returns."""
+
+        self.__init__(epochs=epochs, freqs=freqs, n_cycles=n_cycles,
+                      method=method, time_bandwidth=time_bandwidth,
+                      n_fft=n_fft, width=width, picks=picks, type=type)
+        return self
 
     # ------------------------------------------------------------------------
     def init_from_hdf(self, fname):
@@ -137,16 +157,20 @@ class AvgEpochsTFR:
 
         # Start by initializing everything
         f = h5py.File(fname, 'r+')
-        dic = f['mnepython']['idx_0']['idx_1']
-        data = dic['key_data'][()]
+        dic = f['mnepython']
         freqs = dic['key_freqs'][()]
         times = dic['key_times'][()]
         method = ''.join([chr(x) for x in dic['key_method'][()]])
         chs = dic['key_info']['key_chs']
+        tfr_data = np.zeros((
+            len([ch for ch in chs.keys()]), len(freqs), len(times)))
+        itc_data = np.copy(tfr_data)
         names = []
         locs = []
         ch_types = []
-        for key in chs.keys():
+        for i, key in enumerate(chs.keys()):
+            tfr_data[i, :, :] = dic['key_data'][key]['key_tfr'][()]
+            itc_data[i, :, :] = dic['key_data'][key]['key_itc'][()]
             ch = chs[key]
             ch_val = ch['key_kind'][()][0]
             for t, rules in channel_types.items():
@@ -168,7 +192,7 @@ class AvgEpochsTFR:
                                        [i for i in range(len(locs))])
         # First we create variable head_pos for a correct plotting
         self.pos = montage.get_pos2d()
-        
+
         scale = 1 / (self.pos.max(axis=0) - self.pos.min(axis=0))
         center = 0.5 * (self.pos.max(axis=0) + self.pos.min(axis=0))
         self.head_pos = {'scale': scale, 'center': center}
@@ -214,7 +238,9 @@ class AvgEpochsTFR:
                                     ch_types='eeg')
         # eeg is just a trick to not raise valueError...
         self.tfr = mne.time_frequency.AverageTFR(
-            self.info, data, times, freqs, len(self.picks))
+            self.info, tfr_data, times, freqs, len(self.picks))
+        self.itc = mne.time_frequency.AverageTFR(
+            self.info, itc_data, times, freqs, len(self.picks))
         return self
 
     # ------------------------------------------------------------------------
@@ -228,6 +254,20 @@ class AvgEpochsTFR:
             data = 10 * log(data / mean(data))
         extent = [self.tfr.times[0], self.tfr.times[-1],
                   self.tfr.freqs[0], self.tfr.freqs[-1]]
+        return ax.imshow(data, extent=extent, aspect='auto',
+                         origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+
+    # ------------------------------------------------------------------------
+    def plot_itc(self, index_channel, ax,
+                 vmin=None, vmax=None, log_display=False):
+        """
+        Plot the averaged epochs itc plot for a given channel.
+        """
+        data = self.itc.data[index_channel, :, :]
+        if log_display:
+            data = 10 * log(data / mean(data))
+        extent = [self.itc.times[0], self.itc.times[-1],
+                  self.itc.freqs[0], self.itc.freqs[-1]]
         return ax.imshow(data, extent=extent, aspect='auto',
                          origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
 
@@ -257,3 +297,21 @@ class AvgEpochsTFR:
                   .5,                len(self.picks)+.5]
         return ax.imshow(data, extent=extent, aspect='auto',
                          origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+
+    # ------------------------------------------------------------------------
+    def save_hdf5(self, path, overwrite=True):
+        """Save data as hdf5 file."""
+        from mne.externals.h5io import write_hdf5
+
+        data = [{self.info['ch_names'][i]: self.info['ch_names'][i],
+                 'tfr': self.tfr.data[i, :, :],
+                 'itc': self.itc.data[i, :, :]}
+                for i in range(len(self.info['ch_names']))]
+
+        out = dict(freqs=self.tfr.freqs,
+                   times=self.tfr.times,
+                   data=data,
+                   info=self.info,
+                   method=self.method,
+                   parameters=self.params)
+        write_hdf5(path, out, title='mnepython', overwrite=overwrite)

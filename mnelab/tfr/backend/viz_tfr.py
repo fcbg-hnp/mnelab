@@ -30,6 +30,31 @@ def _plot_time_freq(self):
 
 
 # ---------------------------------------------------------------------
+def _plot_itc(self):
+    """Plot the time-frequency representation."""
+    from .viz_util import _plot_legend_topomap
+    self.ui.figure.clear()
+    gs = self.ui.figure.add_gridspec(10, 30)
+    ax = self.ui.figure.add_subplot(gs[:, :25])
+    self.cbar_image = self.avg.plot_itc(
+        self.index, ax, vmin=self.vmin, vmax=self.vmax, log_display=self.log)
+    ax.set_title('Intertrial Coherence - Channel {}'.format(
+                 self.avg.info['ch_names'][self.avg.picks[self.index]]),
+                 fontsize=15, fontweight='light')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Frequencies (Hz)')
+    ax.grid(False)
+    cax = self.ui.figure.add_subplot(gs[2:, 27])
+    cbar = plt.colorbar(self.cbar_image, cax=cax, format='%6.1e')
+    cbar.ax.set_xlabel('Power', labelpad=15)
+    if self.avg.with_coord != []:
+        tax = cax = self.ui.figure.add_subplot(gs[:2, 25:30])
+        _plot_legend_topomap(self, tax, self.index + 1)
+
+    self.ui.canvas.draw()
+
+
+# ---------------------------------------------------------------------
 def _plot_freq_ch(self):
     """Plot the frequency-channel representation."""
     self.ui.figure.clear()
@@ -98,6 +123,7 @@ def _plot_topomap_tfr(self):
         print("Error with the parameters")
 
 
+# ---------------------------------------------------------------------
 def _find_values(array, min, max):
     """Helper function that return two extremum values, to be sure that
     at least one value in array exist between returned values.
