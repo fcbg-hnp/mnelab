@@ -247,8 +247,10 @@ def _init_epochs_psd(self):
                     bandwidth=self.params.get('bandwidth', 4),
                     type=self.ui.typeBox.currentText())
 
-    calc = CalcDialog(self, "Calculating PSD",
-                      "Calculating Power Spectrum Density.")
+    calc = CalcDialog(self, "",
+                      "Computing Power Spectrum Density...")
+    calc.resize(300, 100)
+    calc.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
     pool = mp.Pool(1)
     psd = EpochsPSD()
     res = pool.apply_async(func=psd.init,
@@ -288,8 +290,10 @@ def _init_raw_psd(self):
                     bandwidth=self.params.get('bandwidth', 4),
                     type=self.ui.typeBox.currentText())
 
-    calc = CalcDialog(self, "Calculating PSD",
-                      "Calculating Power Spectrum Density.")
+    calc = CalcDialog(self, "",
+                      "Computing Power Spectrum Density...")
+    calc.resize(300, 100)
+    calc.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
     pool = mp.Pool(1)
     psd = RawPSD()
     res = pool.apply_async(func=psd.init,
@@ -347,8 +351,10 @@ def _init_avg_tfr(self):
         n_cycles = self.params['n_cycles']
     n_fft = self.params.get('n_fft', None)
 
-    calc = CalcDialog(self, "Calculating Time-Frequency",
-                      "Calculating Time-Frequency.")
+    calc = CalcDialog(self, "",
+                      "Computing Time-Frequency...")
+    calc.resize(300, 100)
+    calc.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
     pool = mp.Pool(1)
 
     avgTFR = AvgEpochsTFR()
