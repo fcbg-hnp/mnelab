@@ -184,6 +184,7 @@ class AvgTFRWindow(QDialog):
             self.ui.channelName.setText(
                 self.avg.info['ch_names'][self.avg.picks[self.index]])
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
@@ -194,6 +195,7 @@ class AvgTFRWindow(QDialog):
         elif self.plotType == 'Channel-Frequency plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[2] - 1)
             self.ui.mainLabel.setText('Times')
@@ -204,6 +206,7 @@ class AvgTFRWindow(QDialog):
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
             self.ui.mainSlider.setEnabled(True)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[1] - 1)
             self.ui.mainLabel.setText('Frequencies')
             self.ui.horizontalLayout.setStretch(0, 1)
@@ -213,6 +216,7 @@ class AvgTFRWindow(QDialog):
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(True)
             self.ui.mainSlider.setEnabled(False)
+            self.ui.mainLabel.setEnabled(False)
             self.ui.horizontalLayout.setStretch(0, 1)
             self.ui.horizontalLayout.setStretch(1, 1)
 
@@ -221,6 +225,7 @@ class AvgTFRWindow(QDialog):
             self.ui.channelName.setText(
                 self.avg.info['ch_names'][self.avg.picks[self.index]])
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.itc.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
