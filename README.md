@@ -23,7 +23,6 @@ Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation via FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
-- [philistine](https://pypi.org/project/philistine/#description) (export raw to VHDR)
 
 In general, it is recommended to always use the latest package versions.
 
@@ -45,8 +44,8 @@ A package on [PyPI](https://pypi.python.org/pypi) will be available soon. Meanwh
 
 
 ### License
-MNELAB is under the BSD 3-clause license (Copyright (c) 2017, Clemens Brunner)
-Philistine subfolder is under the BSD 3-clause license (Copyright (c) 2017--2018, Phillip Alday)
-Modifications of original works are under the BSD 3-clause license (Copyright (c) 2019, Victor Férat, Tanguy Vivier)
+- MNELAB is under the BSD 3-clause license (Copyright (c) 2017, Clemens Brunner) [original work](https://github.com/cbrnr/mnelab)
+- Philistine subfolder is under the BSD 3-clause license (Copyright (c) 2017--2018, Phillip Alday) [original work](https://github.com/palday/philistine)
+- Modifications of original works are under the BSD 3-clause license (Copyright (c) 2019, Victor Férat, Tanguy Vivier)
 
 
