@@ -241,9 +241,9 @@ class MainWindow(QMainWindow):
             "&Time-Frequency...", self.plot_tfr)
         freq_menu.addSeparator()
         self.actions["open_tfr"] = freq_menu.addAction(
-            "&Open Time-frequency from hdf file", self.open_tfr)
+            "&Open Time-Frequency file", self.open_tfr)
         self.actions["open_psd"] = freq_menu.addAction(
-            "&Open power spectrum density from hdf file",
+            "&Open Power Spectrum Density file",
             self.open_psd)
 
         events_menu = self.menuBar().addMenu("&Events")
