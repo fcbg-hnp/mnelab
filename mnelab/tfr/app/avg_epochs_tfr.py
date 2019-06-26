@@ -44,6 +44,7 @@ class AvgTFRWindow(QDialog):
         self.ui.canvas.setStyleSheet('background-color:transparent;')
         # Matplotlib toolbar
         self.ui.toolbar = NavigationToolbar(self.ui.canvas, self)
+        self.ui.toolbar.setMaximumHeight(30)
         self.ui.matplotlibLayout.addWidget(self.ui.toolbar)
         self.ui.matplotlibLayout.addWidget(self.ui.canvas)
 
@@ -183,37 +184,54 @@ class AvgTFRWindow(QDialog):
             self.ui.channelName.setText(
                 self.avg.info['ch_names'][self.avg.picks[self.index]])
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
+            self.ui.horizontalLayout.setStretch(2, 1)
 
         elif self.plotType == 'Channel-Frequency plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[2] - 1)
             self.ui.mainLabel.setText('Times')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Channel-Time plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(False)
             self.ui.mainSlider.setEnabled(True)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[1] - 1)
             self.ui.mainLabel.setText('Frequencies')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Topomap plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(True)
             self.ui.mainSlider.setEnabled(False)
+            self.ui.mainLabel.setEnabled(False)
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Inter-trial Coherence plot':
             self.ui.channelName.show()
             self.ui.channelName.setText(
                 self.avg.info['ch_names'][self.avg.picks[self.index]])
             self.ui.topoFrame.setEnabled(False)
+            self.ui.mainLabel.setEnabled(True)
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.itc.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
+            self.ui.horizontalLayout.setStretch(2, 1)
 
         self.ui.mainSlider.setTickInterval(1)
         self.value_changed()

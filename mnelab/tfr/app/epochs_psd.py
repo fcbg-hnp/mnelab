@@ -81,6 +81,7 @@ class EpochsPSDWindow(QDialog):
         self.ui.canvas.setStyleSheet('background-color:transparent;')
         # Matplotlib toolbar
         self.ui.toolbar = NavigationToolbar(self.ui.canvas, self)
+        self.ui.toolbar.setMaximumHeight(30)
         self.ui.figureLayout.addWidget(self.ui.toolbar)
         self.ui.figureLayout.addWidget(self.ui.canvas)
         self.ui.canvas.mpl_connect('button_press_event', self.onclick)
