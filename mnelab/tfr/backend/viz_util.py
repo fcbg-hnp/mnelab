@@ -70,5 +70,5 @@ def _set_psd_window(win, fig):
 
     dialog.setWindowModality(Qt.WindowModal)
     dialog.setWindowTitle("PSD")
-    dialog.resize(1400, 1000)
+    dialog.resize(1000, 600)
     dialog.exec()

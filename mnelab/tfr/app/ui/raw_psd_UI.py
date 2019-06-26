@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_RawPSDWindow(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1680, 1050)
+        Dialog.resize(1000, 800)
         Dialog.setMaximumSize(QtCore.QSize(1920, 1080))
         font = QtGui.QFont()
         font.setPointSize(10)
