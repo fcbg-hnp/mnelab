@@ -186,6 +186,9 @@ class AvgTFRWindow(QDialog):
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
+            self.ui.horizontalLayout.setStretch(2, 1)
 
         elif self.plotType == 'Channel-Frequency plot':
             self.ui.channelName.hide()
@@ -193,6 +196,8 @@ class AvgTFRWindow(QDialog):
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[2] - 1)
             self.ui.mainLabel.setText('Times')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Channel-Time plot':
             self.ui.channelName.hide()
@@ -200,11 +205,15 @@ class AvgTFRWindow(QDialog):
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[1] - 1)
             self.ui.mainLabel.setText('Frequencies')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Topomap plot':
             self.ui.channelName.hide()
             self.ui.topoFrame.setEnabled(True)
             self.ui.mainSlider.setEnabled(False)
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
 
         elif self.plotType == 'Inter-trial Coherence plot':
             self.ui.channelName.show()
@@ -214,6 +223,9 @@ class AvgTFRWindow(QDialog):
             self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.itc.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
+            self.ui.horizontalLayout.setStretch(0, 1)
+            self.ui.horizontalLayout.setStretch(1, 1)
+            self.ui.horizontalLayout.setStretch(2, 1)
 
         self.ui.mainSlider.setTickInterval(1)
         self.value_changed()
