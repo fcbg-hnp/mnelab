@@ -11,11 +11,12 @@ import mne
 import matplotlib.pyplot as plt
 
 from .utils.montage import eeg_to_montage
+from .utils.export import export_sef
 from .utils.error import show_error
 from .philistine.io import write_raw_brainvision
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
-SUPPORTED_EXPORT_FORMATS = "*.fif *.set *.vhdr"
+SUPPORTED_EXPORT_FORMATS = "*.fif *.set *.vhdr *.sef"
 
 
 try:
@@ -212,6 +213,8 @@ class Model:
                 self._export_set(fname)
             elif ext in (".edf", ".bdf"):
                 self._export_edf(fname)
+            elif ext == ".sef":
+                export_sef(fname, self.current["raw"])
             elif ext == ".vhdr":
                 if self.current["raw"].info["bads"] != []:
                     self.export_bads(join(split(fname)[0], name + "_bads.csv"))
