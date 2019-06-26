@@ -44,6 +44,7 @@ class AvgTFRWindow(QDialog):
         self.ui.canvas.setStyleSheet('background-color:transparent;')
         # Matplotlib toolbar
         self.ui.toolbar = NavigationToolbar(self.ui.canvas, self)
+        self.ui.toolbar.setMaximumHeight(30)
         self.ui.matplotlibLayout.addWidget(self.ui.toolbar)
         self.ui.matplotlibLayout.addWidget(self.ui.canvas)
 

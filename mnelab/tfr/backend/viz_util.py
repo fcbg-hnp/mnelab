@@ -59,6 +59,10 @@ def _set_psd_window(win, fig):
     dialog = QDialog(parent=win)
     layout = QVBoxLayout(dialog)
     canvas = FigureCanvas(fig)
+    toolbar = NavigationToolbar(canvas, win)
+    toolbar.setMaximumHeight(30)
+    toolbar.setStyleSheet("QToolBar { border: 0px }")
+    layout.addWidget(toolbar)
     layout.addWidget(canvas)
     canvas.draw()
 
@@ -70,5 +74,5 @@ def _set_psd_window(win, fig):
 
     dialog.setWindowModality(Qt.WindowModal)
     dialog.setWindowTitle("PSD")
-    dialog.resize(1000, 600)
+    dialog.resize(1000, 700)
     dialog.exec()
