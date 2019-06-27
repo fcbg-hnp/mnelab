@@ -12,7 +12,7 @@ def read_sef(path):
     import re
 
     f = open(path, 'rb')
-    #   Read fixed part of the header
+    #   Read fixed part of the headerà
     version = f.read(4).decode('utf-8')
     n_channels,         = struct.unpack('I', f.read(4))
     num_aux_electrodes, = struct.unpack('I', f.read(4))

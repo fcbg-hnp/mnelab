@@ -1,8 +1,9 @@
 import multiprocessing as mp
 from sys import version_info
+from collections import Counter
 
-import mne
 import matplotlib.pyplot as plt
+import mne
 
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -10,9 +11,7 @@ from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
-from mne.io.pick import channel_type
-from mne import pick_types
-from collections import Counter
+
 from .tfr.backend.avg_epochs_tfr import AvgEpochsTFR
 from .tfr.app.avg_epochs_tfr import AvgTFRWindow
 from .tfr.backend.epochs_psd import EpochsPSD
@@ -20,8 +19,8 @@ from .tfr.app.epochs_psd import EpochsPSDWindow
 from .tfr.backend.raw_psd import RawPSD
 from .tfr.app.raw_psd import RawPSDWindow
 
-
 from .utils.error import show_error
+from .dialogs.calcdialog import CalcDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -29,7 +28,7 @@ from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
-from .dialogs.calcdialog import CalcDialog
+
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
@@ -237,14 +236,14 @@ class MainWindow(QMainWindow):
 
         freq_menu = self.menuBar().addMenu("&Frequencies")
         self.actions["plot_psd"] = freq_menu.addAction(
-            "&Power spectral density...", self.plot_psd)
+            "Compute &Power spectral density...", self.plot_psd)
         self.actions["plot_tfr"] = freq_menu.addAction(
-            "&Time-Frequency...", self.plot_tfr)
+            "Compute &Time-Frequency...", self.plot_tfr)
         freq_menu.addSeparator()
         self.actions["open_tfr"] = freq_menu.addAction(
-            "&Open Time-frequency data (in development)", self.open_tfr)
+            "&Open Time-Frequency file...", self.open_tfr)
         self.actions["open_psd"] = freq_menu.addAction(
-            "&Open power spectrum density data (in development)",
+            "&Open Power Spectrum Density file...",
             self.open_psd)
 
         events_menu = self.menuBar().addMenu("&Events")
@@ -411,7 +410,7 @@ class MainWindow(QMainWindow):
         """Export to file."""
         # BUG on windows fname = QFileDialog.getSaveFileName(self,
         # text, filter=ffilter)[0]
-        fname = QFileDialog.getSaveFileName(self, text)[0]
+        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
             f(fname)
 
@@ -471,9 +470,7 @@ class MainWindow(QMainWindow):
                 if new_label != old_label:
                     renamed[old_label] = new_label
                 new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
-                old_type = channel_type(info, i).lower()
-                if new_type != old_type:
-                    types[new_label] = new_type
+                types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             self.model.set_channel_properties(bads, renamed, types)
@@ -643,6 +640,7 @@ class MainWindow(QMainWindow):
             try:
                 psd = RawPSD().init_from_hdf(fname)
                 win = RawPSDWindow(psd, parent=None)
+                win.setWindowModality(Qt.WindowModal)
                 win.setWindowTitle(fname)
                 win.exec()
             except Exception:
@@ -651,20 +649,16 @@ class MainWindow(QMainWindow):
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
-            epochs = self.model.current["epochs"]
-            dialog = TimeFreqDialog(None, epochs)
-            dialog.setWindowModality(Qt.WindowModal)
-            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
-            dialog.exec_()
+            data = self.model.current["epochs"]
         elif self.model.current["evoked"]:
-            evoked = self.model.current["evoked"]
-            dialog = TimeFreqDialog(None, evoked)
-            dialog.setWindowModality(Qt.WindowModal)
-            dialog.setWindowTitle('TFR of ' + self.model.current["name"])
-            dialog.exec_()
+            data = self.model.current["evoked"]
+        dialog = TimeFreqDialog(None, data)
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setWindowTitle('TFR of ' + self.model.current["name"])
+        dialog.exec_()
 
         try:
-            tfr = dialog.avgTFR.tfr
+            tfr = dialog.avgTFR
             self.data_changed()
         except Exception as e:
             tfr = None
@@ -678,6 +672,7 @@ class MainWindow(QMainWindow):
                                                 filter="*.h5 *.hdf")[0]
             avgTFR = AvgEpochsTFR().init_from_hdf(fname)
             win = AvgTFRWindow(avgTFR, parent=None)
+            win.setWindowModality(Qt.WindowModal)
             win.setWindowTitle(fname)
             win.exec()
         except Exception as e:
@@ -798,8 +793,8 @@ class MainWindow(QMainWindow):
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
             inst_type = "epochs"
-        nchan = len(pick_types(data.info,
-                               meg=True, eeg=True, exclude='bads'))
+        nchan = len(mne.pick_types(data.info,
+                                   meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
