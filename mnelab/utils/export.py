@@ -7,7 +7,8 @@ def export_sef(path, raw):
 
     n_channels = len(raw.info['ch_names'])
     num_freq_frames = raw.n_times
-    sfreq = raw.info['sfreq']
+    info = raw.info
+    sfreq = info['sfreq']
     num_aux_electrodes = n_channels - len(mne.pick_types(info, meg=False, eeg=True, exclude=[""]))
     f = open(path, 'wb')
     f.write("SE01".encode('utf-8'))
@@ -28,7 +29,6 @@ def export_sef(path, raw):
         ch_name = ch_names[k]
         ch_name = ch_name.ljust(8)
         f.write(ch_name.encode('utf-8'))
-        print(ch_name)
 
     data = raw.get_data().astype(np.float32)
     data = np.reshape(data, n_channels * num_freq_frames, order='F')
