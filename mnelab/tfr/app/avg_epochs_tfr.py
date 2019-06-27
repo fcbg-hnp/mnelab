@@ -56,7 +56,8 @@ class AvgTFRWindow(QDialog):
         self.ui.displayBox.addItem('Channel-Time plot')
         if self.avg.with_coord != []:  # Add topomap if there are coordinates
             self.ui.displayBox.addItem('Topomap plot')
-        self.ui.displayBox.addItem('Inter-trial Coherence plot')
+        if not self.avg.evoked:
+            self.ui.displayBox.addItem('Inter-trial Coherence plot')
         self.plotType = 'Time-Frequency plot'
 
     # ---------------------------------------------------------------------

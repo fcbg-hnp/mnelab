@@ -34,6 +34,11 @@ class AvgEpochsTFR:
         self.cmap = 'jet'
         self.method = method
 
+        if hasattr(epochs, 'data'):
+            self.evoked = True
+        else:
+            self.evoked = False
+
         if epochs is not None:
             if type == 'eeg':
                 epochs = epochs.copy().pick_types(meg=False, eeg=True)
@@ -110,17 +115,29 @@ class AvgEpochsTFR:
                 from mne.time_frequency import tfr_multitaper
                 self.params = dict(freqs=freqs, n_cycles=n_cycles,
                                    time_bandwidth=time_bandwidth)
-                self.tfr, self.itc = tfr_multitaper(
-                    epochs, freqs, n_cycles,
-                    time_bandwidth=time_bandwidth,
-                    picks=self.picks, return_itc=True)
+
+                if self.evoked:
+                    self.tfr, self.itc = tfr_multitaper(
+                        epochs, freqs, n_cycles,
+                        time_bandwidth=time_bandwidth,
+                        picks=self.picks), None
+                else:
+                    self.tfr, self.itc = tfr_multitaper(
+                        epochs, freqs, n_cycles,
+                        time_bandwidth=time_bandwidth,
+                        picks=self.picks, return_itc=True)
 
             if method == 'morlet':
                 from mne.time_frequency import tfr_morlet
                 self.params = dict(freqs=freqs, n_cycles=n_cycles)
-                self.tfr, self.itc = tfr_morlet(
-                    epochs, freqs, n_cycles,
-                    picks=self.picks, return_itc=True)
+                if self.evoked:
+                    self.tfr, self.itc = tfr_morlet(
+                        epochs, freqs, n_cycles,
+                        picks=self.picks), None
+                else:
+                    self.tfr, self.itc = tfr_morlet(
+                        epochs, freqs, n_cycles,
+                        picks=self.picks, return_itc=True)
 
             if method == 'stockwell':
                 from mne.time_frequency import tfr_stockwell
@@ -131,9 +148,14 @@ class AvgEpochsTFR:
                 picked = epochs.copy().pick_channels(picked_ch_names)
                 self.params = dict(fmin=freqs[0], fmax=freqs[-1], n_fft=n_fft,
                                    width=width)
-                self.tfr, self.itc = tfr_stockwell(
-                    picked, fmin=freqs[0], fmax=freqs[-1],
-                    n_fft=n_fft, width=width, return_itc=True)
+                if self.evoked:
+                    self.tfr, self.itc = tfr_stockwell(
+                        picked, fmin=freqs[0], fmax=freqs[-1],
+                        n_fft=n_fft, width=width), None
+                else:
+                    self.tfr, self.itc = tfr_stockwell(
+                        picked, fmin=freqs[0], fmax=freqs[-1],
+                        n_fft=n_fft, width=width, return_itc=True)
         else:
             # Only for initializing an empty class...
             self.tfr = None
@@ -170,7 +192,10 @@ class AvgEpochsTFR:
         ch_types = []
         for i, key in enumerate(chs.keys()):
             tfr_data[i, :, :] = dic['key_data'][key]['key_tfr'][()]
-            itc_data[i, :, :] = dic['key_data'][key]['key_itc'][()]
+            try:    # Simply try to get the itc data if it exists
+                itc_data[i, :, :] = dic['key_data'][key]['key_itc'][()]
+            except Exception:
+                pass
             ch = chs[key]
             ch_val = ch['key_kind'][()][0]
             for t, rules in channel_types.items():
@@ -239,8 +264,13 @@ class AvgEpochsTFR:
         # eeg is just a trick to not raise valueError...
         self.tfr = mne.time_frequency.AverageTFR(
             self.info, tfr_data, times, freqs, len(self.picks))
-        self.itc = mne.time_frequency.AverageTFR(
-            self.info, itc_data, times, freqs, len(self.picks))
+        if np.count_nonzero:
+            self.evoked = False
+            self.itc = mne.time_frequency.AverageTFR(
+                self.info, itc_data, times, freqs, len(self.picks))
+        else:
+            self.evoked = True
+            self.itc = None
         return self
 
     # ------------------------------------------------------------------------
@@ -303,10 +333,15 @@ class AvgEpochsTFR:
         """Save data as hdf5 file."""
         from mne.externals.h5io import write_hdf5
 
-        data = [{self.info['ch_names'][i]: self.info['ch_names'][i],
-                 'tfr': self.tfr.data[i, :, :],
-                 'itc': self.itc.data[i, :, :]}
-                for i in range(len(self.info['ch_names']))]
+        if self.evoked:
+            data = [{self.info['ch_names'][i]: self.info['ch_names'][i],
+                     'tfr': self.tfr.data[i, :, :]}
+                    for i in range(len(self.info['ch_names']))]
+        else:
+            data = [{self.info['ch_names'][i]: self.info['ch_names'][i],
+                     'tfr': self.tfr.data[i, :, :],
+                     'itc': self.itc.data[i, :, :]}
+                    for i in range(len(self.info['ch_names']))]
 
         out = dict(freqs=self.tfr.freqs,
                    times=self.tfr.times,
