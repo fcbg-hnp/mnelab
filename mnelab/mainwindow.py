@@ -40,10 +40,12 @@ from .dialogs.resampledialog import ResampleDialog
 from .dialogs.evokedstatesdialog import EvokedStatesDialog
 from .dialogs.evokedtopodialog import EvokedTopoDialog
 from .dialogs.batchdialog import BatchDialog
+from .dialogs.rotatemontagedialog import RotateMontageDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .utils.ica_utils import (plot_ica_components_with_timeseries,
                               plot_overlay)
+from .utils.montage import xyz_to_montage
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -190,7 +192,9 @@ class MainWindow(QMainWindow):
             "Edit channel &properties...",
             self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction(
-            "Edit &montage...", self.set_montage)
+            "Set builtin &montage...", self.set_montage)
+        self.actions["import_montage"] = edit_menu.addAction(
+            "Set montage from &xyz file...", self.import_montage)
         self.actions["events"] = edit_menu.addAction(
             "Edit &events...", self.edit_events)
 
@@ -482,29 +486,38 @@ class MainWindow(QMainWindow):
         dialog = MontageDialog(self, montages,
                                selected=self.model.current["montage"])
         if dialog.exec_():
-            if dialog.montage_path == '':
-                name = dialog.montages.selectedItems()[0].data(0)
-                montage = mne.channels.read_montage(name)
-                self.model.history.append("montage = mne.channels."
-                                          + ("read_montage({})").format(name))
-            else:
-                from .utils.montage import xyz_to_montage
-                montage = xyz_to_montage(dialog.montage_path)
-                self.model.history.append("montage = xyz_to_montage({})"
-                                          .format(dialog.montage_path))
             if self.model.current["raw"]:
-                ch_names = self.model.current["raw"].info["ch_names"]
+                data = self.model.current["raw"]
             elif self.model.current["epochs"]:
-                ch_names = self.model.current["epochs"].info["ch_names"]
+                data = self.model.current["epochs"]
             elif self.model.current["evoked"]:
-                ch_names = self.model.current["evoked"].info["ch_names"]
+                data = self.model.current["evoked"]
+            name = dialog.montages.selectedItems()[0].data(0)
+            montage = mne.channels.read_montage(name)
+            ch_names = data.info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.set_montage(montage)
+                self.model.set_montage(name)
             else:
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
                                      "not match any channel name in the data.")
+
+    def import_montage(self):
+        """Import Montage."""
+        path, _ = QFileDialog.getOpenFileName(
+                        self, "Choose montage path", '',
+                        "3D Coordinates (*.xyz)")
+        try:
+            montage = xyz_to_montage(path)
+        except Exception as e:
+            print(e)
+
+        # Open Rotate montage ...
+        dialog = RotateMontageDialog(self, montage)
+        if dialog.exec_():
+            montage = dialog.get_montage()
+            self.model.set_montage(montage)
 
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
