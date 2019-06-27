@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
         """Export to file."""
         # BUG on windows fname = QFileDialog.getSaveFileName(self,
         # text, filter=ffilter)[0]
-        fname = QFileDialog.getSaveFileName(self, text)[0]
+        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
             f(fname)
 
