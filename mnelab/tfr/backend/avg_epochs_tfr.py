@@ -264,7 +264,7 @@ class AvgEpochsTFR:
         # eeg is just a trick to not raise valueError...
         self.tfr = mne.time_frequency.AverageTFR(
             self.info, tfr_data, times, freqs, len(self.picks))
-        if np.count_nonzero:
+        if np.count_nonzero(itc_data):
             self.evoked = False
             self.itc = mne.time_frequency.AverageTFR(
                 self.info, itc_data, times, freqs, len(self.picks))

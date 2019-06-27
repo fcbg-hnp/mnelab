@@ -640,6 +640,7 @@ class MainWindow(QMainWindow):
             try:
                 psd = RawPSD().init_from_hdf(fname)
                 win = RawPSDWindow(psd, parent=None)
+                win.setWindowModality(Qt.WindowModal)
                 win.setWindowTitle(fname)
                 win.exec()
             except Exception:
@@ -671,6 +672,7 @@ class MainWindow(QMainWindow):
                                                 filter="*.h5 *.hdf")[0]
             avgTFR = AvgEpochsTFR().init_from_hdf(fname)
             win = AvgTFRWindow(avgTFR, parent=None)
+            win.setWindowModality(Qt.WindowModal)
             win.setWindowTitle(fname)
             win.exec()
         except Exception as e:
