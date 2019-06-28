@@ -5,6 +5,7 @@ from matplotlib.backends.backend_qt5agg \
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QHBoxLayout,
                              QLabel, QDialogButtonBox, QPushButton)
 from PyQt5.QtCore import pyqtSlot, Qt, QSize
+from PyQt5.QtGui import QIcon
 
 import mne
 import numpy as np
@@ -14,23 +15,19 @@ from matplotlib.backends.backend_qt5agg \
 from matplotlib.backends.backend_qt5agg \
     import NavigationToolbar2QT as NavigationToolbar
 
+from matplotlib.colors import ListedColormap
+
+white = np.array([[0, 0, 0, 0]])
+cmp = ListedColormap(white)
+
 
 class RotateMontageDialog(QDialog):
     def __init__(self, parent, montage):
         super().__init__(parent)
-        self.resize(800, 500)
+        self.resize(800, 800)
         vbox = QVBoxLayout(self)
-        self.cw_button = QPushButton("Rotate Clockwise")
-        self.anticw_button = QPushButton("Rotate Anti-Clockwise")
-        vbox.addWidget(self.cw_button)
-        vbox.addWidget(self.anticw_button)
         self.plotLayout = QVBoxLayout(self)
         vbox.addLayout(self.plotLayout)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
 
         self.figure = plt.figure(figsize=(10, 10))
         self.figure.patch.set_facecolor('None')
@@ -39,8 +36,23 @@ class RotateMontageDialog(QDialog):
         self.plotLayout.addWidget(self.canvas)
         self.montage = montage
 
+        hbox = QHBoxLayout(self)
+        self.cw_button = QPushButton()
+        self.cw_button.setIcon(QIcon.fromTheme('object-rotate-right'))
+        self.anticw_button = QPushButton()
+        self.anticw_button.setIcon(QIcon.fromTheme('object-rotate-left'))
+        hbox.addWidget(self.cw_button)
+        hbox.addWidget(self.anticw_button)
+
         self.cw_button.clicked.connect(lambda: self.rotate())
         self.anticw_button.clicked.connect(lambda: self.rotate(anti=True))
+        vbox.addLayout(hbox)
+
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                     QDialogButtonBox.Cancel)
+        vbox.addWidget(buttonbox)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
 
         self.plot()
 
@@ -53,7 +65,7 @@ class RotateMontageDialog(QDialog):
         data = [0] * len(self.montage.pos)
         mne.viz.plot_topomap(data, self.montage.get_pos2d(), axes=ax,
                              names=self.montage.ch_names, show_names=True,
-                             sensors=".", show=False)
+                             sensors=",", show=False, cmap=cmp)
         self.canvas.draw()
 
     def rotate(self, anti=False):
